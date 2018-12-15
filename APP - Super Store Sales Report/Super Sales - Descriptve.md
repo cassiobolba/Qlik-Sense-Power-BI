@@ -27,15 +27,34 @@
 
 ## 2) Analizing the data: How to answer the questions with the available data? Challenges
 
-**A) Total sales:** Analizing the main table "Orders", you see sales value is there. But if you compare the data with the table "Returns", the returned product is also on "Orders" table. 
- 
-In order to avoid data mismatch, boths tables were joined based on orderID.    
+**A) Total sales:** Analizing the main table "Orders", you see sales value is there. But if you compare the data with the table "Returns", the returned product is also on "Orders" table.  
+Qlik Sense associative engine can handle  it by itself.
 
-Expression used to calculate total sales not suming returned itens (Considering returned the money to costumer who returned itens )
+Below, expression used to calculate total sales not suming returned itens (Considering business returned the money to costumer who returned itens, and further named **vTotal_Sales_No_Returned** )
 
 ``` sql
-sum(Sales) - sum({$<Returned={"yes"}>}Sales)
+sum(Sales) - sum({$<Returned={'Yes'}>}Sales)
+```
+**B) Profit:**  
+The profit also had to be calculated by ignoring the returned products by the following expression (further named as **vTotal_Profit_No_Returned** ):
+```sql
+=(sum(Profit) - Sum({$<Returned={'Yes'}>}Profit))
+```
+The secondary KPI, which is a percentage of total profit over total sales, was created based the two past expressions. The expressions were saved as variables to be reused later
+``` sql
+'%'&round(((vTotal_Profit_No_Returned)*100)/(vTotal_Sales_No_Returned), 0.01)
+```
+To color the total profit KPI, we used the below expression. Profit percentage limit calculation (target is 10%)
+``` sql
+=(sum(Sales) - Sum({$<Returned={'Yes'}>}Sales)) * 0.1
 ```
 
-**A) Year/Month/Day Filters:**  
- 
+**D) Sales by Category:**  
+It was created a master dimension with specific RGB colors for each category, to make sure the colors will be the same on other visualizations.
+<p align="center">
+  <img width="460" height="300" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/Category_MasterDimension.JPG">
+</p>
+
+**C) Year/Month/Day Filters:**  
+
+      
