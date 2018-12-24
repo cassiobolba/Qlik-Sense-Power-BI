@@ -42,7 +42,10 @@ The profit also had to be calculated by ignoring the returned products by the fo
 ```
 The secondary KPI, which is a percentage of total profit over total sales, was created based the two past expressions. The expressions were saved as variables to be reused later
 ``` sql
-'%'&round(((vTotal_Profit_No_Returned)*100)/(vTotal_Sales_No_Returned), 0.01)
+'%'&
+	round(
+    	  (((sum(Profit) - Sum({$<Returned={'Yes'}>}Profit)))*100)/(sum(Sales) - Sum({$<Returned={'Yes'}>}Sales)),
+      0.01)
 ```
 To color the total profit KPI, we used the below expression. Profit percentage limit calculation (target is 10%)
 ``` sql
@@ -101,13 +104,187 @@ The same thought used to calculate the sales was used to count the number of ord
 count(distinct [Order ID]) - count(distinct {$<Returned={'Yes'}>}[Order ID])
 ```
 
-**F) Cell color for products with low margin:**  
+**G) Cell color for products with low margin:**  
 In the pivot table displaying sales and profit margin by location, it was added an expression to highlight in red locations with lower margin of sales:
 ```sql
-if((((sum(Profit) - Sum({$<Returned={'Yes'}>}Profit))*100)/(sum(Sales) - sum({$<Returned={'Yes'}>}Sales)))<= 9.99 ,red(255),Green(255))
+if(
+	(((sum(Profit) - Sum({$<Returned={'Yes'}>}Profit))*100)/(sum(Sales) - sum({$<Returned={'Yes'}>}Sales)))<= 9.99 ,
+    red(255),
+    Green(255)
+   )
 ```
 It was also added an expression to highligh in green the profitable regions:
 ```sql
 if((sum(Profit) - Sum({$<Returned={'Yes'}>}Profit))<= 0 ,red(255),Green(255))
 ```
+<p align="center">
+<img width="475"
+     height="550"
+     src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/Pivot%20Table%20sales%20location%20color.JPG">
+</p>
+
+**H) Top Vendor by Value and order:**  
+In order to highlight who is the best vendor, it was created a caption to show it with the following expression
+```sql
+FirstSortedValue
+			(distinct Person, 
+                		(-aggr
+                        	(Sum(Sales) - sum({$<Returned={'Yes'}>}Sales),
+                        Person)) 
+             )
+                         &' = '&
+             num
+                 (max
+                      (aggr
+                            (sum(Sales) - sum({$<Returned={'Yes'}>}Sales),
+                       Person)),
+                  '$#.###.###,#0'
+                  )
+```
+<p align="center">
+<img width="475"
+     height="150"
+     src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/Top%20vendor%20by%20value.JPG">
+</p>
+
+Also, to sow the best vendor by order number, it was created the following expression:
+```sql
+FirstSortedValue
+		(distinct Person,
+        			(-aggr
+                    	(count(Sales) - count({$<Returned={'Yes'}>}Sales),
+                     Person)) 
+         )
+                     &' = '&
+         max
+         	(aggr
+            	(count(Sales) - Count({$<Returned={'Yes'}>}Sales)
+            ,Person)
+            )
+            
+```
+<p align="center">
+<img width="475"
+     height="150"
+     src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/top%20vendor%20by%20order.JPG">
+</p>
+
+**I) Top 5 products sold and top 5 margin:**  
+On sales page, it is shown the top 5 bigger value produtcs sold. In order to acomplish that, it was used the following expression and result:
+```sql
+=aggr
+	(if
+    	(rank
+        	(sum(Sales) - sum({$<Returned={'Yes'}>}Sales))<=5,
+        [Product Name]),
+[Product Name])
+```
+<p align="center">
+<img width="475"
+     height="150"
+     src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/Top%205%20products%20sold%20by%20value.JPG">
+</p>
+
+Similarly, a table was created to show the top 5 biggest profit margin with the following expression:
+```sql
+=aggr
+	(if
+    	(rank
+        	(sum(Profit) - sum({$<Returned={'Yes'}>}Profit))<=5,
+         [Product Name]),
+[Product Name])
+```
+<p align="center">
+<img width="475"
+     height="150"
+     src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/Top%205%20products%20sold%20by%20margin.JPG">
+</p>
+Color expression was also added to the table as seen before, with very similar expressions.
+
+**J) Number or order Returned and % from total orders:**  
+Set modifiers were used to count the total number of orders retuned and the represetavite % over the total orders, with the following expressions:
+```sql
+count(distinct {$<Returned={'Yes'}>}[Order ID])
+```
+for percentagem over the total, the expression used was:
+```sql
+((count(distinct {$<Returned={'Yes'}>}[Order ID]))*100 ) / ((count(distinct [Order ID])) - (count(distinct {$<Returned={'Yes'}>}[Order ID])))
+```
+<p align="center">
+<img width="475"
+     height="150"
+     src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/Orders%20Returned.JPG">
+</p>
+
+**K) Value of sales returned and % from total sales:**
+To display the amount of money returned to costumer and the % it represents over the total, set modifier were also used:
+```sql
+Sum({$<Returned={'Yes'}>}Sales)
+```
+For the % o money returned over the total:
+```sql
+((Sum({$<Returned={'Yes'}>}Sales))*100) / (sum(Sales) - Sum({$<Returned={'Yes'}>}Sales))
+```
+<p align="center">
+<img width="475"
+     height="150"
+     src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/orders%20returner%20in%20value.JPG">
+</p>
+
+**L) Value of profit loss and % from total sales:**
+Similar set expressions were used:
+```sql
+ Sum({$<Returned={'Yes'}>}Profit)
+```
+and:
+```sql
+ ((Sum({$<Returned={'Yes'}>}Profit)) *100) / (SUM(Sales) -  Sum({$<Returned={'Yes'}>}Profit))
+ ```
+ <p align="center">
+<img width="475"
+     height="150"
+     src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/orders%20returned%20profit%20loss.JPG">
+</p>
+
+## 3) Final Result:
+* The app was designed to be very easy fo user to interact. That's why all pages have all filter on the left panel;
+* Also, the main is to check influence of selection of each page on the totals ;
+* According to the first section, on page was created for each area of analysis;
+* To make even more flexible to check influence of a selection, there are navigation buttons for each page on the top of all pages. Ex: User make a product selection on the product page and want to check if that product was ever returned, he/she just need to navigate to Returned Products Page throught the navigation button and then come back. 
+
+**GENERAL SALES PAGE**
+ <p align="center">
+<img width="700"
+     height="400"
+     src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/page%201%20-%20General%20Sales%20Page.JPG">
+</p>
+
+**SALES BY REGION PAGE**
+ <p align="center">
+<img width="700"
+     height="400"
+     src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/page%202%20-%20Sales%20By%20region.JPG">
+</p>
+
+**SALES BY VENDOR PAGE**
+ <p align="center">
+<img width="700"
+     height="400"
+     src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/part%203%20-%20sales%20by%20vendor.JPG">
+</p>
+
+**SALES BY PRODUCT PAGE**
+ <p align="center">
+<img width="700"
+     height="400"
+     src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/Page%204%20-%20Sales%20by%20product.JPG">
+</p>
+
+**PRODUCTS RETURNED PAGE**
+ <p align="center">
+<img width="700"
+     height="400"
+     src="https://github.com/cassiobolba/Qlik-Sense/blob/master/APP%20-%20Super%20Store%20Sales%20Report/Images/page%205%20-%20Products%20returned.JPG">
+</p>
+
 
