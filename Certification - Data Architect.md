@@ -23,13 +23,13 @@
 * While loading data from a data source, you can use the Data Profiling or not to help you to build the model;  
 *  Using Data profiling does not create table connections instantly but offers the option of doing it on data manager, as well as allow bulk division and other edititings;  
 <p align="center">     
- <img width="600" height="150" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20model%201.JPG">
+ <img width="600" height="180" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20model%201.JPG">
  </p> 
 
 * If not using data profiling, the table connections are created automaticaly, and you have to edit on the data load editor changing field names  
 * You can check the table relationship connected through lines  
 <p align="center">     
- <img width="800" height="450" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20model%202.JPG">
+ <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20model%202.JPG">
  </p> 
 
 * Click in a table header and on preview button to check data quality specs for the table:
@@ -46,7 +46,7 @@ Field Metadata: Density od field filled , Total distinct values, Present Distinc
 * You can brake it on data manager by breaking the synthetic key;    
 * you can also rename the field or concatenate them on data load editor;   
  <p align="center">     
- <img width="800" height="450" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20model%203.JPG">
+ <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20model%203.JPG">
  </p>
 
 ## Part 3 - Data Manager
@@ -75,7 +75,7 @@ While in table tab, you can go to editing a table and:
 ### Loading data in the Data Manager
 * After starting the load process and enabled the data manager, you can create the associations by dragging and droping the bubbles (tables) on the top of each other or use recommended association automatically. Consider the colors to see if the association is recommended or not (green, yellow and red). 
  <p align="center">     
- <img width="800" height="450" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%201.JPG">
+ <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%201.JPG">
  </p>
 
 * After creating the association, load the data;  
@@ -85,7 +85,7 @@ While in table tab, you can go to editing a table and:
 
 **Summary**
  <p align="center">     
- <img width="800" height="450" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%202.JPG">
+ <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%202.JPG">
  </p>
 
 
