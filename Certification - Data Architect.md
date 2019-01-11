@@ -11,11 +11,9 @@
 ###
 ####
 
-<p align="center">     
- <img width="600" height="450" src="">
- </p>
 
 # Basic
+## Part 1 - Intro to Qlik Sense
 ## Part 2 - Understanding The Data Modeling User Interfaces
 
 ### Data Model Viewer  
@@ -40,7 +38,8 @@ Field Metadata: Density od field filled , Total distinct values, Present Distinc
 ### Data Model Issues
 **Circular Reference**
 * When data is associated in a closed loop. Lead to data mishmatch.  
-* You can solve by renaming the field you don't want as a key field, or braking association in  Data Manager  
+* You can solve by renaming the field you don't want as a key field, or braking association in  Data Manager    
+
 **Synthetic Key**
 * This is when there are more then one field as key field creating a composite key;   
 * You can brake it on data manager by breaking the synthetic key;    
@@ -58,12 +57,14 @@ There are 2 main tabs on Data manager: Association and tables tab
 * Association bubble view  
 * Evaluate, consider, configura break and preview associations  
 * Concatenate, Synchronize, delete, reload, view detaisl and edit tables  
+
 **Tables TAB**
 * Determine # of fields  
 * View data source  
 * Identify concatenated tables split or concatenate it 
-* Delete and edit tables 
-**Edit Tables TAB** 
+* Delete and edit tables   
+
+**Edit Tables TAB**   
 While in table tab, you can go to editing a table and:  
 * Edit table or field names,   
 * format date fields,  
@@ -86,6 +87,53 @@ While in table tab, you can go to editing a table and:
 **Summary**
  <p align="center">     
  <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%202.JPG">
+ </p>
+
+## Part 4 - Data Manager Calculations and Transformations
+### CARDS  
+It is available unde the edit table 
+**Summary Card:**  
+check the data type (dim or mea), Distinct vs. total values, frequency cont chart, null values, mixed values, summary metrics  
+**Bucket Card:**  
+divide data in buckets of values ranges. It creates a new column field. Ex: measure with ages from 0 to 100, if you apply 5 buckets, you can then classify first bucket 0-20 as young, 21-40 as adult, 41-60 middle age and so on. You can also personilize the ranges values and names as you wish.  
+**Split Card:**   
+It allows you to split your data in a field, as you wish. EX: you have a field car plate number = IHB-7701. You can split it into 2 fields, one for numbers and other for letters. Similiar to the example below:
+ <p align="center">     
+ <img width="400" height="300" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20-%20Split%20Card.JPG">
+ </p>
+ 
+**Replace and Set Null Card:**     
+Used to replace disparate values. EX: In you table there are USA, U.S.A and United Stated. You can select theses values to become one of them to make it standard.  
+In null card you can select the distinct values you want to be treated as nulls (kind of exclude the values from field)  
+
+**Order Card:**  
+If the order function in the chart does not match your requirements, you can use order card to customize the order. EX: Sort Gold, Silver and Bronze (which cannot be achieved by ascendig or descending. Just by expression)  
+
+### CALCULATED FIELDS  
+You can access in the add field button.  
+EX: you can calculate the profit of a field by subtracting cost by selling price.
+```sql
+round(selling_price - cost_price, 0.01)
+```
+ <p align="center">     
+ <img width="400" height="300" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20-%20Calculated%20Fields.JPG">
+ </p>
+
+Another example is to standarize a field that has multiple different asnwers: y, Yes, YES, n, NO, NO by calculating a new field:  
+```sql
+upper(left(Agree_or_not))
+```  
+The result is only, Y or N
+
+### UNPIVOT  
+Turn a wide table to a tall table
+ <p align="center">     
+ <img width="400" height="300" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20-%20Unpivot.JPG">
+ </p>
+
+### Review
+ <p align="center">     
+ <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20calc-%20review.JPG">
  </p>
 
 
