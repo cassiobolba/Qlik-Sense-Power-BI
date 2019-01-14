@@ -116,7 +116,7 @@ EX: you can calculate the profit of a field by subtracting cost by selling price
 round(selling_price - cost_price, 0.01)
 ```
  <p align="center">     
- <img width="400" height="300" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20-%20Calculated%20Fields.JPG">
+ <img width="400" height="275" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20-%20Calculated%20Fields.JPG">
  </p>
 
 Another example is to standarize a field that has multiple different asnwers: y, Yes, YES, n, NO, NO by calculating a new field:  
@@ -128,12 +128,12 @@ The result is only, Y or N
 ### UNPIVOT  
 Turn a wide table to a tall table
  <p align="center">     
- <img width="400" height="300" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20-%20Unpivot.JPG">
+ <img width="400" height="275" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20-%20Unpivot.JPG">
  </p>
 
 ### REVIEW
  <p align="center">     
- <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20calc-%20review.JPG">
+ <img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20calc-%20review.JPG">
  </p>
 
 ## Part 5 - Data Manager Associations and Concatenations  
@@ -144,7 +144,7 @@ Even though you can automatically generate associations through data manager, it
 One example of concatenating tables is when you have an order table, and a NEW ORDER TABLE.  
 * when you load a table with exact same fields name and # of fields, it automatically concated the tables on data manager, showing a bubble with Overlaped circles:     
  <p align="center">     
- <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20manager%20-%20Concatenating%20tables.JPG">
+ <img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20manager%20-%20Concatenating%20tables.JPG">
  </p>  
 
 **FORCE CONCATENATION**   
@@ -156,14 +156,14 @@ Is used when you want to concatenate tables with different number of fields and 
 * It will open both tables on right with all fields. the field not yet mapped are going to have a question mark beside (?);  
 * Drag and the field from one table to another, from right column side to the manager;  
  <p align="center">     
- <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20manager%20-%20forcing%20Concatenating%20tables.JPG">
+ <img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20manager%20-%20forcing%20Concatenating%20tables.JPG">
  </p>    
 
 * You can also split the tables after concatenating;
 
 ### REVIEW
 <p align="center">     
-<img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20manager%20-%20Concatenating%20tables%20review.JPG">
+<img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20manager%20-%20Concatenating%20tables%20review.JPG">
 </p>  
 
 ## Part 6 - Introduction to the Data Load Editor 
@@ -175,7 +175,7 @@ Data Load Editor has 4 main functions:
 
 ### OVERVIEW
 <p align="center">     
-<img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Load%20Script%20-%20Introduction%20Overview.JPG">
+<img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Load%20Script%20-%20Introduction%20Overview.JPG">
 </p>
 
 
