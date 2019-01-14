@@ -16,7 +16,7 @@
 ## Part 1 - Intro to Qlik Sense
 ## Part 2 - Understanding The Data Modeling User Interfaces
 
-### Data Model Viewer  
+### 2. Data Model Viewer  
 
 * While loading data from a data source, you can use the Data Profiling or not to help you to build the model;  
 *  Using Data profiling does not create table connections instantly but offers the option of doing it on data manager, as well as allow bulk division and other edititings;  
@@ -35,7 +35,7 @@ Table Metadata: # of rows and # of fields
 Field Metadata: Density od field filled , Total distinct values, Present Distinct Values, Non-Null Values, Subset Ratio  
 * Data manager is where you can connect tables trought recomended association 
 
-### Data Model Issues
+#### Data Model Issues
 **Circular Reference**
 * When data is associated in a closed loop. Lead to data mishmatch.  
 * You can solve by renaming the field you don't want as a key field, or braking association in  Data Manager    
@@ -48,7 +48,7 @@ Field Metadata: Density od field filled , Total distinct values, Present Distinc
  <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20model%203.JPG">
  </p>
 
-## Part 3 - Data Manager
+### 2.Data Manager
 To use data manager with all functions, while loading data, you must anable the DATA PROFILING option.  
 There are 2 main tabs on Data manager: Association and tables tab
 **Association TAB**
@@ -73,7 +73,7 @@ While in table tab, you can go to editing a table and:
 * unpivot tables,   
 * use cards: Summary, bucket, set nulls,order, split, replace data.
 
-### Loading data in the Data Manager
+#### Loading data in the Data Manager
 * After starting the load process and enabled the data manager, you can create the associations by dragging and droping the bubbles (tables) on the top of each other or use recommended association automatically. Consider the colors to see if the association is recommended or not (green, yellow and red). 
  <p align="center">     
  <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%201.JPG">
@@ -89,8 +89,8 @@ While in table tab, you can go to editing a table and:
  <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%202.JPG">
  </p>
 
-## Part 4 - Data Manager Calculations and Transformations
-### CARDS  
+### 4.Data Manager Calculations and Transformations
+#### CARDS  
 It is available unde the edit table 
 **Summary Card:**  
 check the data type (dim or mea), Distinct vs. total values, frequency cont chart, null values, mixed values, summary metrics  
@@ -109,7 +109,7 @@ In null card you can select the distinct values you want to be treated as nulls 
 **Order Card:**  
 If the order function in the chart does not match your requirements, you can use order card to customize the order. EX: Sort Gold, Silver and Bronze (which cannot be achieved by ascendig or descending. Just by expression)  
 
-### CALCULATED FIELDS  
+#### CALCULATED FIELDS  
 You can access in the add field button.  
 EX: you can calculate the profit of a field by subtracting cost by selling price.
 ```sql
@@ -125,18 +125,18 @@ upper(left(Agree_or_not))
 ```  
 The result is only, Y or N
 
-### UNPIVOT  
+#### UNPIVOT  
 Turn a wide table to a tall table
  <p align="center">     
  <img width="400" height="275" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20-%20Unpivot.JPG">
  </p>
 
-### REVIEW
+#### REVIEW
  <p align="center">     
  <img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20calc-%20review.JPG">
  </p>
 
-## Part 5 - Data Manager Associations and Concatenations  
+### 5.Data Manager Associations and Concatenations  
 **CHECKING DATA ASSOCIATIONS**  
 Even though you can automatically generate associations through data manager, it is always a good practice to check the association quality (check color showing).   
 
@@ -161,28 +161,78 @@ Is used when you want to concatenate tables with different number of fields and 
 
 * You can also split the tables after concatenating;
 
-### REVIEW
+#### REVIEW
 <p align="center">     
 <img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20manager%20-%20Concatenating%20tables%20review.JPG">
 </p>  
 
-## Part 6 - Introduction to the Data Load Editor 
+### 6.Introduction to the Data Load Editor 
 Data Load Editor has 4 main functions:  
 * **Connect to data source:** Connect to DB, file, API...  
 * **Extract data:** Pull the data from the source;  
 * **Transform data:**  You can edit data, change field names, change field format (eihter in main tab or in the load editor);  
 * **Load dat into app:** Load and store data into a QVD;
 
-### OVERVIEW
+#### OVERVIEW
 <p align="center">     
 <img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Load%20Script%20-%20Introduction%20Overview.JPG">
 </p>
 
+# Intermediate
+## Part 3 - Loading Data
+### 1. Loading Data from a Database
+Data can come from many different sources:   
+* Physical table structures;  
+* Logical Views from tabular dataset;  
+* Programing structures as Stored Procedures and user defined functions.      
+
+**Connection storage Location**    
+* Qlik Sense Desktop: In the QVF file (stay with the report file)  
+* Qlik Sense Enterprise: Created on the QMC and is not saved on QVF  
+
+####Connection Syntax
+```sql
+LIB CONNECT TO 'connection_name';
+```
+* The syntax must be right before the tables to be loaded;  
+* Organize the tables in groups according to different connections, or create a different tab to each different connection;    
+* When a LIB syntax is placed, it disconect from previous LIB connection;  
+
+####Loading from DATABASE**  
+**OLE DB**   
+Frequently used to access MDB files (access DB). Requires selection of a provider.    
+* Select a provider (for .mdb is "microsoft jet 4.0 OLE DB...") > Find the file or server name > Check security if needed > Test > Name it > Create.
+
+<p align="center">     
+<img width="300" height="450" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/OLE%20DB%20connection.jpg">
+</p>  
+
+* After creating the connection, clik on insert data on the connection;  
+* Select tables available, fields from tables and on and insert the script;
 
 
 
+**ODBC (Open DB Configuration)**   
+Used to connect to SQL servers DataBases. Requires set-up of the DSN in Advance:    
+* When you open ODBC connection option, it looks for any DSN in the system automatically;  
+* enter the User and Paswword > Rename it > Create;  
 
+<p align="center">     
+<img width="300" height="450" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/ODBC%20Connection.jpg">
+</p>
 
+* Qlik in add data > Select the database > Select the tables > Insert Script
+
+**Loading from Stored Procedures:**  
+Create the table with the fields as it was from a normal table and add the 'EXEC' command followed by the address of the procedure:  
+```SQL
+[Table_name]:
+LOAD
+Cust,
+Product,
+price;
+SQL EXEC SP_NAME.dbo.SPgetDivision
+```
 
 
 
