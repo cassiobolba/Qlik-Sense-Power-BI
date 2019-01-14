@@ -131,12 +131,52 @@ Turn a wide table to a tall table
  <img width="400" height="300" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20-%20Unpivot.JPG">
  </p>
 
-### Review
+### REVIEW
  <p align="center">     
  <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Manager%20calc-%20review.JPG">
  </p>
 
+## Part 5 - Data Manager Associations and Concatenations  
+**CHECKING DATA ASSOCIATIONS**  
+Even though you can automatically generate associations through data manager, it is always a good practice to check the association quality (check color showing).   
 
+**CONCATENATE TABLES**   
+One example of concatenating tables is when you have an order table, and a NEW ORDER TABLE.  
+* when you load a table with exact same fields name and # of fields, it automatically concated the tables on data manager, showing a bubble with Overlaped circles:     
+ <p align="center">     
+ <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20manager%20-%20Concatenating%20tables.JPG">
+ </p>  
+
+**FORCE CONCATENATION**   
+Is used when you want to concatenate tables with different number of fields and different fields names, or even diffent field data:  
+* Go to data manager > click on triple dots > Select both tables;   
+* The manager will auto concatenate field with similar values;  
+* Remaining fields must be concatenated manually;  
+* Click on Edit Mappings > Edit Fields;  
+* It will open both tables on right with all fields. the field not yet mapped are going to have a question mark beside (?);  
+* Drag and the field from one table to another, from right column side to the manager;  
+ <p align="center">     
+ <img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20manager%20-%20forcing%20Concatenating%20tables.JPG">
+ </p>    
+
+* You can also split the tables after concatenating;
+
+### REVIEW
+<p align="center">     
+<img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20manager%20-%20Concatenating%20tables%20review.JPG">
+</p>  
+
+## Part 6 - Introduction to the Data Load Editor 
+Data Load Editor has 4 main functions:  
+* **Connect to data source:** Connect to DB, file, API...  
+* **Extract data:** Pull the data from the source;  
+* **Transform data:**  You can edit data, change field names, change field format (eihter in main tab or in the load editor);  
+* **Load dat into app:** Load and store data into a QVD;
+
+### OVERVIEW
+<p align="center">     
+<img width="800" height="500" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Data%20Load%20Script%20-%20Introduction%20Overview.JPG">
+</p>
 
 
 
