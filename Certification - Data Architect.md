@@ -190,7 +190,7 @@ Data can come from many different sources:
 * Qlik Sense Desktop: In the QVF file (stay with the report file)  
 * Qlik Sense Enterprise: Created on the QMC and is not saved on QVF  
 
-####Connection Syntax
+#### Connection Syntax
 ```sql
 LIB CONNECT TO 'connection_name';
 ```
@@ -198,13 +198,13 @@ LIB CONNECT TO 'connection_name';
 * Organize the tables in groups according to different connections, or create a different tab to each different connection;    
 * When a LIB syntax is placed, it disconect from previous LIB connection;  
 
-####Loading from DATABASE**  
+#### **Loading from DATABASE**  
 **OLE DB**   
 Frequently used to access MDB files (access DB). Requires selection of a provider.    
 * Select a provider (for .mdb is "microsoft jet 4.0 OLE DB...") > Find the file or server name > Check security if needed > Test > Name it > Create.
 
 <p align="center">     
-<img width="300" height="450" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/OLE%20DB%20connection.jpg">
+<img width="300" height="400" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/OLE%20DB%20connection.jpg">
 </p>  
 
 * After creating the connection, clik on insert data on the connection;  
@@ -218,7 +218,7 @@ Used to connect to SQL servers DataBases. Requires set-up of the DSN in Advance:
 * enter the User and Paswword > Rename it > Create;  
 
 <p align="center">     
-<img width="300" height="450" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/ODBC%20Connection.jpg">
+<img width="300" height="400" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/ODBC%20Connection.jpg">
 </p>
 
 * Qlik in add data > Select the database > Select the tables > Insert Script
@@ -233,6 +233,82 @@ Product,
 price;
 SQL EXEC SP_NAME.dbo.SPgetDivision
 ```
+### 2. Considerations when loading Data from Excel  
+* You can either choose loading data from Script Editor or Data Manager;  
+* In case loaded by script editor, you can still go to data manager and "Synchronize data" , to make available the data manager capabilities available;  
+* You can ignore first rows on the "header size" option, in case you have more lines of header in your spreadsheet;  
+* In case there is no header ojn you table, choose "no Field Names" on the "field names" panel;  
+
+#### REVIEW
+<p align="center">     
+<img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Considerations%20when%20loading%20data%20from%20excel.JPG">
+</p>  
+
+### 3. Incorporating Data from Qlik DataMarket  
+* Qlik data service, already cleaned, to be used in your models;  
+* Finacial data, exchange rates, populations, countries and so on...    
+* When usgng a resident load from a DM table, you need to use the noconcatenate function to avoid data concatenation:  
+```sql
+[New_table_name]:
+NoConcatenate
+LOAD
+field1,
+field2
+RESIDENT DM_table_name;
+DROP DM_table_name;
+```
+
+#### REVIEW
+<p align="center">     
+<img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Incorporating%20data%20from%20qlik%20data%20market.JPG">
+</p>    
+
+### 4. Working with QVD files  
+* QVD: Table compressed in a phisical form in a disc.  
+* QVD is much faster compared to a data connection; because it compress the data as 1 entity in the QVD file, while data conections load data row by row;   
+* To create a QVD> Load data from a source (xls, DB, API, DM) > Model it and store into a qvd using:  
+```sql
+STORE  <table name> INTO[lib://<dataconnection>/<filename>.qvd];
+```  
+* Add this in the end of the data model: 
+<p align="center">     
+<img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/QVD%20creation%20syntax%20example.JPG">
+</p>    
+
+* QVD archtechture usualy is composed by a extraction layer from the data connection (after extracting, the connection is closed) and storing in a first layer QVD. After, others layers of QVD can be created according to data manipulation needed and also stored in QVD to the be available to be usied in multiple applications:  
+<p align="center">     
+<img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/QVD%20application%20architecture%20and%20modeling.JPG">
+</p>   
+
+* When storing, you select the path, and can create a structured folder repository to store the QVD according to the organization needed;    
+
+#### INCREMENTAL LOAD  
+* Used when data load takes a long time, also users and qlik need to extract data from DB, overwhelming the connection likely leading to slowness issues;    
+* Incremental load is function in the script that make the load happens only for the most recent modifications, reducing the connection time to database;  
+* There are 3 types of incremental load strategies: Insert, Update and Delete;  
+
+```sql
+LET vLastExecTime = ReloadTime();
+LET vBeginningThisExecTime = Now ();
+DataTable:
+SQL SELECT PrimKey, X, Y 
+FROM DB_Table
+WHERE LastUpdate >= #$(vLastExecTime)#
+AND LastUpdate < #$(vBeginningThisExecTime)#;
+```   
+* ReloadTime function and now functions are required to create the where condition and select the time frame AFTER LAST RELOAD and NOW;  
+<p align="center">     
+<img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Incremental%20load%20example.JPG">
+</p> 
+
+#### REVIEW  
+<p align="center">     
+<img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Working%20with%20QVD%20review%201.JPG">
+</p>   
+
+<p align="center">     
+<img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Working%20with%20QVD%20review%202.JPG">
+</p> 
 
 
 
