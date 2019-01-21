@@ -340,20 +340,108 @@ Since data in QVD are in memory data, they need to be reloaded every time the da
 <img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Reloading%20data.JPG">
 </p> 
 
-**TRIGGERS**
+**TRIGGERS**  
 In Qlik Enterprise you can create triggers to automatically reload, in QMC.    
 
 **CHECKING LAST LOAD**  
 Either a funtion on app page or on the app options (3 dots).  
 
+### 3 - Creating Data During Reload   
+**INCLUDE**  
+Bring External reference from a source text file. EX: SET variables, LET...  
+```sql
+$(Include=[lib://<connector/<filename>])
+```    
+Application:  
+* Easier migration of apps from one country to another
+* Support for multiple developers contributing to the same data load script  
+
+**AUTOGENERATE**     
+Used for:  
+* Rapid generation of large, unique datasets, for performance testing;  
+* Generation of master caledar; 
+
+```sql
+TableName:  
+LOAD  
+    ROWNO() AS ID,  
+    RAND() AS RandomNuM,  
+    1 AS OneEveryTime  
+AUTOGENERATE  
+    5  
+;
+```  
+This script is going to generate 5 rows for each of the 3 columns created on the load script. RowNo is incremental, random is random and 1 will always be 1.  
+
+**INLINE**  
+* Sused when small volume in infrently changing hard-coded data;  
+* Custom sort orders;  
+* Data which only architecs should change;   
+* Also used to create tables for section access;  
+```sql
+TableName:  
+LOAD 
+    *
+INLINE [
+    Field1, field2, field3  
+    value1, value2, value3  
+    value4, value5, value6  
+];  
+```   
+**RESIDENT**   
+* Create table copies and apply data manipulation throught row filtering;  
+* Always drop the temporary tables;    
+
+```sql
+TableName:
+LOAD
+    *
+RESIDENT 
+    <Table_Name>
+WHERE <Criteria needed>
+ORDER BY <Field>
+;
+```  
+
+### 4 - Generating a Master Calendar   
+<p align="center">     
+<img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Master%20Calendar%20Review.JPG">
+</p> 
 
 
+**ANOTHER EXAMPLE**
+```sql
+Temp:  
+Load  
+min(OrderDate) as minDate,  
+max(OrderDate) as maxDate  
+Resident Orders;  
+      
+Let varMinDate = Num(Peek('minDate', 0, 'Temp'));  
+Let varMaxDate = Num(Peek('maxDate', 0, 'Temp'));  
+DROP Table Temp;  
+      
+TempCalendar:  
+LOAD  
+$(varMinDate) + Iterno()-1 As Num,  
+Date($(varMinDate) + IterNo() - 1) as TempDate  
+AutoGenerate 1 While $(varMinDate) + IterNo() -1 <= $(varMaxDate);  
+      
+MasterCalendar:  
+Load  
+  TempDate AS OrderDate,  
+  week(TempDate) As Week,  
+  Year(TempDate) As Year,  
+  Month(TempDate) As Month,  
+  Day(TempDate) As Day,  
+  ApplyMap('QuartersMap', month(TempDate), Null()) as Quarter,  
+  Week(weekstart(TempDate)) & '-' & WeekYear(TempDate) as WeekYear,  
+  WeekDay(TempDate) as WeekDay  
+Resident TempCalendar  
+Order By TempDate ASC;  
+Drop Table TempCalendar;  
+```
 
-
-
-
-### 3 - Creating Data During Reload 
-### 4 - Generating a Master Calendar 
 ### 5 - Combining Tables 
 ### 6 - Create Master Items
 ### 7 - Creating Master Items from the Data Model Viewer
