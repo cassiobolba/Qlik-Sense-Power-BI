@@ -310,7 +310,50 @@ AND LastUpdate < #$(vBeginningThisExecTime)#;
 <img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Working%20with%20QVD%20review%202.JPG">
 </p> 
 
+## Part 4: Model Architecting
+### 1 - Associating Tables and Transforming Data 
+**ASSOCIATING**  
+To Associate tables with the correct field in the load script you can alias the field:  
+```sql
+Field_name as Key_field_name
+```  
+**PRECEDING LOAD**  
+* Used to make transformation in qlik script after loading from DB;  
+* Can have multiple stacked tranformations (load on top of load, on top of load...);  
+* The reading on a preceding load is from bottom (DB selections) to top (modification loads);  
+
+```sql
+LOAD
+Field_a + Field_b as Field_C;
+SQL SELECT  
+Field_a,
+Field_b  
+FROM Database_name;
+``` 
+* Try to make as most calculation as possible on load script to make the visualizations faster;  
+* You cannot refer a new field aliased in the same load statement, you need to create a new load on the top (stacked preceding load).  
+
+### 2 - Reload Data for Analysis     
+**IN MEMORY DATA PROCESS**    
+Since data in QVD are in memory data, they need to be reloaded every time the data is aletered on data source.  
+<p align="center">     
+<img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Reloading%20data.JPG">
+</p> 
+
+**TRIGGERS**
+In Qlik Enterprise you can create triggers to automatically reload, in QMC.    
+
+**CHECKING LAST LOAD**  
+Either a funtion on app page or on the app options (3 dots).  
 
 
 
 
+
+
+
+### 3 - Creating Data During Reload 
+### 4 - Generating a Master Calendar 
+### 5 - Combining Tables 
+### 6 - Create Master Items
+### 7 - Creating Master Items from the Data Model Viewer
