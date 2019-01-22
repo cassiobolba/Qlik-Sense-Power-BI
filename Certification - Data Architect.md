@@ -441,7 +441,92 @@ Resident TempCalendar
 Order By TempDate ASC;  
 Drop Table TempCalendar;  
 ```
+### 5 - Combining Tables   
+**WHY COMBINE TABLES?**  
+* Join data from different tables;  
+* Combine tables with matching values to reduce number of tables and enhance performance;  
+* Mapping tables work similar as joins, but for another specif cases;  
 
-### 5 - Combining Tables 
+**CONCATENATING TABLES**  
+2 Types of concatenation: Forced (when the number of columns and field names between tables are different) and automatic (when tables fully macth);   
+
+**JOINS**  
+Same logic as SQL 
+* Right  
+* Left  
+* Inner  
+* Outer   
+
+**MAPPING TABLES**   
+Mappings are used:  
+* When one table has only two fields (key and a value);  
+* First you need to express which table is being mapped:  
+
+```sql
+Table_name_map:
+MAPPING LOAD  
+    Key_field,  
+    Values_field;  
+<source>
+```  
+Mapped tables are droped automatically after loading data.  
+Secondly, you need to apply the map in the desired table:  
+
+```sql
+Table_name:
+LOAD
+    Key_field,  
+    APPLY MAP ('Table_name_map', Key_field, 'Not Found')as Map_Field,    
+    Field_2;  
+<source>  
+```  
+
+'Table_name_map' = Table name to be mapped  
+Key_field = Field to match both tables  
+'Not Found' = What to fill in case there is no match
+
+#### REVIEW  
+<p align="center">     
+<img width="800" height="470" src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Combining%20Tables.JPG">
+</p> 
+
+
 ### 6 - Create Master Items
-### 7 - Creating Master Items from the Data Model Viewer
+#### Why create master Items:  
+* Master dimension or master measure values can be colored to represent custom color schemes.  
+* Master dimensions can contain multiple fields organized in a drill-down group. 
+<p align="center">
+<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/4.6%20Master%20Items%20-%20Drill%20Down.JPG">
+</p> 
+
+* Master measures and dimensions can save expressions  
+
+```sql
+sum(total_sales) - sum(total_cost) 
+```    
+* Build and edit visualizations more efficiently using centralized assets.  
+* Create an organized and well-named collection of reusable items for other user.  
+* Define alternate states of selections to apply to specific visualizations. 
+
+you can define an alternate selection for a chart, go:  
+Mater Items > Alternate States > Just name it > Copy one Chart > drag the state to the copied chart > apply.  
+now you can apply different selections for same charts and compare
+<p align="center">
+<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/4.6%20Master%20Items%20-%20Alternate%20Selections.JPG">
+</p>
+
+<p align="center">
+<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/4.6%20Master%20Items%20-%20Alternate%20Selections%202.JPG">
+</p> 
+
+**Three places to create Master Items:**   
+* Create master items from the Master items (  ) section in the Assets panel;  
+* Create master items from the Fields (  ) section in the Assets panel;  
+* Create master items from the Data model viewer (  ), Preview panel;  
+
+### 7 - Creating Master Items from the Data Model Viewer  
+
+#### REVIEW
+<p align="center">
+<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Master%20Items%20Review.JPG">
+</p> 
