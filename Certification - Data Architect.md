@@ -529,4 +529,118 @@ now you can apply different selections for same charts and compare
 #### REVIEW
 <p align="center">
 <img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Master%20Items%20Review.JPG">
+</p>   
+
+## Part 5 - Validating and Troubleshooting
+### 1. Resolving Data Model Issues    
+**SYNTHETIC KEYS**  
+When two  tables has more than one field in common;  
+To resolve, just leave 1 field with common name or create a compound key concatenating the comon fields:  
+```sql
+Table_name:  
+LOAD  
+Key_1ID & Key_2ID as New_key,  
+...
+```   
+**CIRCULAR REFERENCE** 
+Solution is similar to solving synthetic keys: Removing or renaming the fields.  
+
+**QUALIFY / UNQUALIFY**
+Used to solved Synthetic keys and Circular references.  
+When using it, it will rename the field wit same name using the table perfix before the field name.  
+
+```sql
+QUALIFY *;
+UNQUALIFY Key_field;
+TABLE_NAME:
+LOAD
+    Field1,
+    Field2,
+    Field3
+FROM <...>
+UNQUALIFY *;
+```  
+
+* Add on the top of load statement the qualify, which will add a table prefix in all field "tablename.fieldname";    
+* Below, use the unqualify to not use the prefix in the key field;  
+* Then load table script;  
+* At the end, add the unqualify to finish the qualifying function;    
+
+#### REVIEW   
+<p align="center">
+<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Resolving%20Association%20Issues.JPG">
+</p>    
+
+### 2. Debugging the Script    
+**common errors:**    
+* Lack of connection or connection error name;  
+* Lack of colon or semi-colon;  
+* Lack of colon after table name;  
+* Different table names;  
+
+**Error Mode:**  
+You can set the error mode to continue trying to load the script even with errors:  
+```sql
+SET ErrorMode=1; (default, it stops the load when find error)  
+or  
+SET ErrorMode=0; (Try to continue the load)
+```  
+
+**Debbuger**  
+* Use to check errors;    
+* Run the code chunks by chunks;    
+* Check log of loading;    
+* You can favourite on the debugger the most checked expression for errors;  
+
+#### REVIEW   
+<p align="center">
+<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Debugging%20the%20script.JPG">
 </p> 
+
+### 3. Validating the Model  
+**VALIDATION TABLE**  
+* A table is created joining data from the Qlik Data Model and the Source Data Model, to compare if the fields match;  
+* Also it is possible to create calculations field to check if there is any variance in values, making easier to spot values differece;   
+<p align="center">
+<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Validation%20Table.JPG">
+</p>    
+
+**COUNTER FIELDS**  
+* Count fields to check if the number match with the real one;  
+* Create flags to separate fields to calculate;  
+```sql
+TableName:  
+LOAD  
+    IF (gender='Male', 1, 0) as MalesFlag,  
+    IF (gender='Female', 1, 0) as FemalesFlag,  
+...
+```  
+Now is easy to count the number of each gender:  
+```sql
+SUM(MalesFlag)
+```  
+* Could be dangerous to create counts of key fields values, so it is better to create a new field as flag for counting:  
+```sql  
+...
+1 as ProductsFLag,  
+...
+```   
+It will create a a value 1 for each row. Now you can sum(ProductsFLag) to see all orders;  
+
+#### REVIEW     
+<p align="center">
+<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Validating%20the%20Data%20Review.JPG">
+</p> 
+
+
+
+
+
+
+
+
+
+
+
+### 3. Validating the Model  
+
