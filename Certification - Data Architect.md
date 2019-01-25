@@ -630,17 +630,256 @@ It will create a a value 1 for each row. Now you can sum(ProductsFLag) to see al
 #### REVIEW     
 <p align="center">
 <img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Validating%20the%20Data%20Review.JPG">
+</p>   
+
+# ADVANCED  
+## Part 6 - Advanced Scripting  
+### 1. Working with Dates in the Data Load Script  
+**MASTER CALENDAR**   
+* we create master calendar to usually have a continuous date ranges, avoiding gaps:  
+1st create the max and min variables > Autogenerate all missing dates in a temp calendar table > Resident load the auto-generated field to a master calendar table > drop the temporary tables. (check the master calendar section); 
+* Master calendar works fine when there is a single **date field**;    
+* You can create multiple master calendars, but it slows down data model, and is confusing for business analyst since you will have many date tables.    
+
+**LINK TABLES**  
+* Good solution when you have more than a date field;  
+* It is a table that contain common fields from two or more tables;  
+* Used to solve Circular references and Synthetic Keys;  
+ <p align="center">
+<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Link%20table.JPG">
+</p>    
+
+EXAMPLE
+```sql
+//* load dimension tables *//
+Orders:
+LOAD
+	OrderID & OrderDate as Key_orders,
+    //OrderID,
+    OrderDate//,
+    //OrderSalesAmount,
+    //CustomerID
+FROM [lib://LinkTableData/LinkTableDates-data.xlsx]
+(ooxml, embedded labels, table is Orders);
+
+Invoices:
+LOAD
+	InvoiceID &'-'& InvoiceDate as Key_invoice,
+    InvoiceID,
+    //OrderID,
+    InvoiceDate//,
+    //InvoiceAmount
+FROM [lib://LinkTableData/LinkTableDates-data.xlsx]
+(ooxml, embedded labels, table is Invoices);
+
+Shipments:
+LOAD
+	ShipmentID &'-'& ShipmentDate as Key_shipment,
+    ShipmentID,
+    //OrderID,
+    ShipmentDate//,
+    //CustomerID
+FROM [lib://LinkTableData/LinkTableDates-data.xlsx]
+(ooxml, embedded labels, table is Shipments);
+
+//* build temporary link table *//
+LinkTable_Temp:
+LOAD *,
+     OrderDate as DATE,
+     'OrderDate' as DateType
+FROM [lib://LinkTableData/LinkTableDates-data.xlsx]
+(ooxml, embedded labels, table is Orders);
+
+Invoices:
+Concatenate LOAD 
+	 *,
+     InvoiceDate as DATE, 
+     'InvoiceDate' as DateType
+FROM [lib://LinkTableData/LinkTableDates-data.xlsx]
+(ooxml, embedded labels, table is Invoices);
+
+Shipments:
+Concatenate LOAD 
+	 *,
+     ShipmentDate as DATE,
+     'ShipmentDate' as DateType
+FROM [lib://LinkTableData/LinkTableDates-data.xlsx]
+(ooxml, embedded labels, table is Shipments);
+//* end of temporary link table *//
+
+
+//* create final LinkTable *//
+LinkTable:
+LOAD
+     DateType, 
+     DATE,
+     Day(DATE) as Day,
+     Month(DATE) as Month,
+     Year(DATE) as Year,
+     InvoiceAmount,
+     OrderSalesAmount,
+     CustomerID,
+     OrderID,
+     OrderID &'-'& OrderDate as Key_orders,
+     InvoiceID &'-'& InvoiceDate as Key_invoice,
+     ShipmentID &'-'& ShipmentDate as Key_shipment
+Resident LinkTable_Temp;
+//* end of final linktable *//
+
+//* drop the temporary LinkTable *//
+DROP Table LinkTable_Temp;
+```
+* It works up to a few tables, more than 3 or 4 tables make the script to complex and overwhelming;  
+
+**DATE ISLAND**  
+* Like a stand alone master calendar loose in the data model;  
+* Easier to do than link tables;    
+
+ <p align="center">
+<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Date%20Island.JPG">
 </p> 
 
+EXAMPLE:  
+```sql
+//* Generating the quarters automatically to map to calendar later *//
+QuartersMap:  
+MAPPING LOAD   
+            RowNo() as Month,  
+            'Q' & Ceil (RowNo()/3) as Quarter  
+AutoGenerate (12);  
+
+//* Temp table to create the max and min date *//  
+Temp:  
+LOAD  
+            Min(OrderDate) as minDate,  
+            Max(OrderDate) as maxDate  
+Resident Orders;  
+  
+LET varMinDate = Num(Peek('minDate', 0, 'Temp'));  
+LET varMaxDate = Num(Peek('maxDate', 0, 'Temp'));  
+DROP Table Temp;  
+
+//* Temp calendar table to generate continuous date series values (fill the gaps) *//   
+TempCalendar:  
+LOAD  
+            $(varMinDate) + IterNo()-1 as Num,  
+            Date($(varMinDate) + IterNo() - 1) as TempDate  
+            AutoGenerate 1 While $(varMinDate) + IterNo() -1 <= $(varMaxDate); 
+
+//* Date Island is created from resident load from TempCalendar table. The TempDate field is aliased to loose relationship with other tables *//    
+DateIsland:  
+LOAD  
+            TempDate as Date,  
+            Week(TempDate) as Week,  
+            Year(TempDate) as Year,  
+            Month(TempDate) as Month,  
+            Day(TempDate) as Day,  
+            YearToDate(TempDate)*-1 as CurYTDFlag,  
+            YearToDate(TempDate,-1)*-1 as LastYTDFlag,  
+            InYear(TempDate, MonthStart($(varMaxDate)),-1) as RC12,  
+            Date(MonthStart(TempDate), 'MMM-YYYY') as MonthYear,  
+            ApplyMap('QuartersMap', Month(TempDate), Null()) as Quarter,  
+            Week(WeekStart(TempDate)) & '-' & WeekYear(TempDate) as WeekYear,  
+            WeekDay(TempDate) as WeekDay  
+Resident TempCalendar  
+Order By TempDate ASC; 
+//* Drop the temp tables *//  
+DROP Table TempCalendar; 
+```  
+* Since there is no association between tables and date island, you have to create a comparison if statement on the frontend to show results. For example, sum of sales:  
+```sql
+sum(if(OrderDate=Date,sales))
+```
+* The model will have to compare every single date to check the if condition, what can slow down the visualization on the front end.    
+
+**CANNONICAL DATE FIELD**  
+* A bridge table is created in the table with the finest granularity and then is connected to the canonical table;  
+* Finest granularity is a table where each record has only one values of each type associated;  
+* It is not centrilized as a link table, is easy to create beacause does not require the concatenated fields as link table;  
+
+ <p align="center">
+<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Canonical%20Calendar.JPG">
+</p>
+
+* Fist step is to create the DateBridge table:  
+```sql
+//* start mapping tables only mapping the date field and the ID field of each table, using resident load from original table *//
+OrderID2OrderDate:
+Mapping 
+LOAD
+    OrderID, 
+    OrderDate 
+Resident Orders;
+
+OrderLineKey2ShipmentDate:
+Mapping 
+LOAD
+    OrderLineKey, 
+    ShipmentDate 
+Resident Shipments;
+
+CustomerID2RelationshipEndDate:
+Mapping 
+LOAD
+    CustomerID, 
+    RelationshipEndDate 
+Resident Customers;
+
+//* end of mapping tables *//
+//* apply the map using resident from the table with finest granularity *//
+
+DateBridge:
+LOAD FinestGranularity, 
+    ApplyMap('OrderID2OrderDate',OrderID,Null()) as CanonicalDate, 
+    'Order' as DateType
+Resident OrderDetails;
+
+LOAD FinestGranularity, 
+    ApplyMap('OrderLineKey2ShipmentDate',OrderLineKey,Null()) as CanonicalDate, 
+    'Shipment' as DateType
+Resident OrderDetails;
+    
+LOAD FinestGranularity, 
+    ApplyMap('CustomerID2RelationshipEndDate',OrderID,Null()) as CanonicalDate, 
+    'CustomerEndDate' as DateType
+Resident OrderDetails;
+
+```
+* While loading the data in the actual tables, create the  FinestGranularity field with alias from the field that has no repeated values:  
+```sql
+//* loading OrderDetails data */
+OrderDetails:
+LOAD
+    KEY_OrderDetails,
+    OrderLineKey,
+    OrderLineKey as FinestGranularity,
+    OrderID,
+    LineNo,
+    ProductID,
+    Quantity,
+    UnitPrice,
+    LineSalesAmount,
+    Discount
+FROM [lib://CanonicalDateData/OrderDetails.qvd]
+(qvd);
+
+//* loading Orders data */
+```
+
+* Last step, create the canonical calendar:  
+```sql
+CanonicalCalendar:
+LOAD CanonicalDate,
+    Day(CanonicalDate) as Day,
+    Month(CanonicalDate) as Month,
+    Year(CanonicalDate) as Year,
+    Date(MonthStart(CanonicalDate),'MMM-YYYY') as MonthYear
+Resident DateBridge;
+```
+
+PAREI NA PARTE 2. CONITUNAR NO VIDEO 3
 
 
 
 
-
-
-
-
-
-
-### 3. Validating the Model  
 
