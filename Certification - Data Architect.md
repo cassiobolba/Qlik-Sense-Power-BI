@@ -1077,6 +1077,78 @@ BINARY LIB://Connection_folder_name (pc user name_user Id)/app_id_joio898t723bi9
 </p>
 
 
+### 3. Classifying Data  
+**INTERVAL TYPES**  
+* < or > = Lower or greater than (exclude the ending values). EX: Values > 3 = 4,5,6    
+* ≤ or ≥ = Lower or equal and greater of equal (include the ending value). Ex: ≥ 3 = 3,4,5,6  
+
+
+**CLASS ()**   
+* You use class function to group values in buckets by intervals of values;    
+* Syntax:  
+```sql
+Class(Expression,Interval[,label[,offset]])
+```   
+* Let`s say you have a table with artist and its respective sales and you want to classify it by buckets of sales with intervals of 100millions:  
+```sql
+...
+Class(sales, 100, 'sales') AS Ranking,  
+...
+```
+It will create a column with the values of "0 < sales < 100", other values of "100 < sales < 200" and so on.    
+* Class function can only divide data in symetric buckets: 50 by 50, or 100 by 100 and so one. No flexibility choosing the size of buckets;     
+* In case it happens to the data soucer add a new bucket in a load, class function automatically creates the new bucket;  
+
+**IF ()**    
+* Syntax  
+```sql
+IF(condition, then, else)  
+```    
+* Nested if functions are used to have cutomized interval buckets. EX: grade < 50 = F, grade > 50 and < 60 = E, grade > 60 and < 70 = D...   
+```sql
+[Student Grades]:
+LOAD
+    Student,
+    IF (score >=0 and score < 60, 'F',
+     IF (score >=60 and score < 70, 'D',
+      IF (score >=70 and score < 80, 'C', 
+       IF (score >=80 and score < 90, 'B',
+       'A')))) as Grade
+RESIDENT [Student Scores];
+```  
+
+* negative side is that you need to define all buckets manually. In case a new bucket class is added, user need to add to the code;  
+
+
+**INTERVALMATCH ()**  
+* Used to compare the data interval from one table to a predefined table which contain the interval bucket table;  
+* You can have the predefined table on your data base or create a INLINE table on the fly;  
+* Syntax:  
+```sql
+Table_name:
+IntervalMatch (Match_Field1, Match_Field2)
+LOAD 
+    load_statement,  
+    Fields_from_Interval_Table
+RESIDENT [Data_Table]
+```     
+* You can have as many interval matching fields as you need; Let's say you have 2 different grade criteria for stundents in lower school and high school;  
+* You have to create your interval match table like this:  
+ <p align="center">
+<img width="300" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Interval%20Match%20Table%20with%20Multiple%20Criteria.JPG">
+</p>   
+
+**REVIEW**
+ <p align="center">
+<img width="750" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Classifying%20Data%20Review.JPG">
+</p>     
+
+
+
+
+
+
+
 
 
 
