@@ -646,7 +646,7 @@ It will create a a value 1 for each row. Now you can sum(ProductsFLag) to see al
 * It is a table that contain common fields from two or more tables;  
 * Used to solve Circular references and Synthetic Keys;  
  <p align="center">
-<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Link%20table.JPG">
+<img width="700" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Link%20table.JPG">
 </p>    
 
 EXAMPLE
@@ -656,9 +656,9 @@ Orders:
 LOAD
 	OrderID & OrderDate as Key_orders,
     //OrderID,
-    OrderDate//,
-    //OrderSalesAmount,
-    //CustomerID
+    //OrderDate,
+    OrderSalesAmount,
+    CustomerID
 FROM [lib://LinkTableData/LinkTableDates-data.xlsx]
 (ooxml, embedded labels, table is Orders);
 
@@ -667,8 +667,8 @@ LOAD
 	InvoiceID &'-'& InvoiceDate as Key_invoice,
     InvoiceID,
     //OrderID,
-    InvoiceDate//,
-    //InvoiceAmount
+    //InvoiceDate,
+    InvoiceAmount
 FROM [lib://LinkTableData/LinkTableDates-data.xlsx]
 (ooxml, embedded labels, table is Invoices);
 
@@ -677,8 +677,8 @@ LOAD
 	ShipmentID &'-'& ShipmentDate as Key_shipment,
     ShipmentID,
     //OrderID,
-    ShipmentDate//,
-    //CustomerID
+    //ShipmentDate,
+    CustomerID
 FROM [lib://LinkTableData/LinkTableDates-data.xlsx]
 (ooxml, embedded labels, table is Shipments);
 
@@ -736,7 +736,7 @@ DROP Table LinkTable_Temp;
 * Easier to do than link tables;    
 
  <p align="center">
-<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Date%20Island.JPG">
+<img width="700" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Date%20Island.JPG">
 </p> 
 
 EXAMPLE:  
@@ -798,12 +798,13 @@ sum(if(OrderDate=Date,sales))
 * It is not centrilized as a link table, is easy to create beacause does not require the concatenated fields as link table;  
 
  <p align="center">
-<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Canonical%20Calendar.JPG">
+<img width="700" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Canonical%20Calendar.JPG">
 </p>
 
 * Fist step is to create the DateBridge table:  
 ```sql
-//* start mapping tables only mapping the date field and the ID field of each table, using resident load from original table *//
+//* start mapping tables only mapping the date field and the ID field of each table,   
+using resident load from original table *//
 OrderID2OrderDate:
 Mapping 
 LOAD
@@ -845,9 +846,10 @@ LOAD FinestGranularity,
 Resident OrderDetails;
 
 ```
+
 * While loading the data in the actual tables, create the  FinestGranularity field with alias from the field that has no repeated values:  
 ```sql
-//* loading OrderDetails data */
+//* loading OrderDetails data *//
 OrderDetails:
 LOAD
     KEY_OrderDetails,
@@ -863,7 +865,7 @@ LOAD
 FROM [lib://CanonicalDateData/OrderDetails.qvd]
 (qvd);
 
-//* loading Orders data */
+//* loading Orders data *//
 ```
 
 * Last step, create the canonical calendar:  
@@ -875,9 +877,211 @@ LOAD CanonicalDate,
     Year(CanonicalDate) as Year,
     Date(MonthStart(CanonicalDate),'MMM-YYYY') as MonthYear
 Resident DateBridge;
+```  
+
+* Finally, to use canonical calendar, on the front end you have to use set analisys expressions that will compare with the table flag created on the bridge table. If you want to sum quantity of material in order table, you have to use the expression:   
+```sql
+sum({$<DateType={'Order'}>}quantity)
+```  
+
+**DATA ISLAND X CANONICAL CALENDAR**    
+* Canonical calendar is always a better option;  
+* Data Island has no conection with the model, which create the need of going throught all dates;  
+* Canonical Calendar has conection, which reduce the impact in the model;  
+* Both need expressions on front end, which may slow down vizualization selections;  
+* Avoind front end expressions as most as possible;  
+
+**LOAD SCRIPT FLAGS**   
+* To calculate YTD sales, you could create the following expression on the vizualization:  
+```sql
+SUM({<Year={Year(Max(date))}, Date={'<=Date(Max(Date), 'DD MMM YYYY')', Month=>}Sales)
+```    
+* But every time user makes a selection, the expression need to be validated, which can slow down the process in a large dataset;   
+* Instead, flags can be created in the load script, and the output of it will be 1 or 0. 1 if it is part of the last year date, 0 if not:  
+```sql   
+YearToDate(OrderDate,) *-1 as CYTDFlag,  
+...
+```    
+* Then in the front end, the expression is goin to be simpler:  
+```sql
+Money(sum({<CYTDFlag={1}>} Sales))
+```  
+
+**DATA FUNCTIONS (FOUND ON QLIK COMMUNITY)**  
+* Data Offset & Fiscal Years;     
+Used when companies have fiscal years different from standard (Jan 1st to Dec. 31st) 
+
+```sql
+/* loading Orders data */
+Orders:
+LOAD
+    OrderRecordCounter,
+    OrderID,
+    Date(OrderDate) as OrderDate, /*Make sure order date in date format*/
+    CustomerID,
+    EmployeeID,
+    ShipperID,
+    FreightWeight,
+    OrderStatus,
+    LastUpdated
+FROM [lib://FiscalCalendarData/Orders.qvd]
+(qvd);
+
+/* vFiscalYearStartMonth - Tells the starting month of the Fiscal Year
+vStartDate - Starting date of the Calendar generation
+vEndDate - Ending date of the Calendar generation */
+ 
+LET vToday = Num('20-Mar-2015');
+
+SET vFiscalYearStartMonth = 7;
+LET vStartDate = Num(YearStart($(vToday), -1));
+LET vEndDate = Num(YearEnd($(vToday)));
+ 
+FiscalCalendar:
+LOAD
+    *,
+    Dual('Q' & Ceil(FiscalMonth/3), Ceil(FiscalMonth/3)) as FiscalQuarter,        // Fiscal Calendar Quarter
+    Dual(Text(Date(MonthEnd(OrderDate), 'MMM')), FiscalMonth) as FiscalMonthName; // Fiscal Calendar Month Name
+
+LOAD
+    *,
+    Year(OrderDate) 
+      as Year, /* Standard Calendar Year */  
+    Month(OrderDate) 
+      as Month, /* Standard Calendar Month */  
+    Date(MonthEnd(OrderDate), 'MMM') 
+      as MonthName, /* Standard Calendar Month Name */  
+    Dual('Q' & Ceil(Month(OrderDate)/3), Ceil(Month(OrderDate)/3)) as Quarter, /* Standard Calendar Quarter */  
+    Mod(Month(OrderDate) - $(vFiscalYearStartMonth), 12) + 1 as FiscalMonth, /* Fiscal Calendar Month */  
+    YearName(OrderDate, 0, $(vFiscalYearStartMonth) as FiscalYear;/* Fiscal Calendar Year */  
+
+LOAD
+    Date($(vStartDate) + RangeSum(Peek('RowNum'), 1) - 1, 'DD-MMM-YYYY') 
+      as OrderDate,
+    RangeSum(Peek('RowNum'), 1) 
+      as RowNum
+AutoGenerate vEndDate - vStartDate + 1;  
 ```
 
-PAREI NA PARTE 2. CONITUNAR NO VIDEO 3
+**4-4-5 CALENDAR**  
+* Frequently used in logistic and planning activities;    
+  
+**REVIEW** 
+ <p align="center">
+<img width="750" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Working%20with%20Dates%20Review.JPG">
+</p>
+
+### 2. Managing Security with Section Access   
+**SECURITY:** 
+* Authentication: Who is trying to get access (not covered in this module). I it handled by Qlik proxy features.   
+* Authorization: What they are trying to do? what they are trying to see?    
+* All section access script must be placed in the first app section, before the load script;  
+* After Section Access script, you need to place **SECTION APPLICATION** before the load statement to start applying the section access control;  
+
+**SECTION ACCESS: APP AUTHORIZATION**  
+* Create tables to manage access to specific data;  
+* Create a new section to add section access privileges:  
+```sql
+SECTION ACCESS;
+Authorization:
+LOAD * INLINE [
+    ACCESS, USER ID
+    ADMIN, ABC\CASSIO
+    USER, ABC\MILAN
+];
+
+SECTION APPLICATION;  
+...   
+```
+* Section access must be UPPER CASE;  
+* This script would authorize cassio from domain ABC the admin access, and Milan with user access only;    
+
+**SECTION ACCESS: ROW AUTHORIZATION**   
+* You can make a user see only specific sections os data from the data set. Ex: A user can only see SALES data:  
+```sql
+SECTION ACCESS;
+Authorization:
+LOAD * INLINE [
+    ACCESS, USER ID, REDUCTION 
+    ADMIN, ABC\CASSIO,  
+    USER, ABC\MILAN, SALES
+    USER, ABC\KUNAL, PHARMA
+    USER, ABC\KUNAL, 
+];
+
+SECTION APPLICATION;  
+...
+```
+* All reduction fields must be upper case in both dataset and section access script;      
+
+**SECTION ACCESS: COLUMN AUTHORIZATION**    
+* You can omit a full coluumn from a user using the omit function;  
+```sql
+SECTION ACCESS;
+Authorization:
+LOAD * INLINE [
+    ACCESS, USER ID, OMIT 
+    ADMIN, ABC\CASSIO,  
+    USER, ABC\MILAN, JobTitle
+    USER, ABC\KUNAL, JobTitle
+    USER, ABC\KUNAL, Pharma
+];
+
+SECTION APPLICATION;  
+...
+``` 
+
+**SECTION ACCESS: OMIT GROUP OF COLUMNS AUTHORIZATION**   
+* In this case you create an omit table pointing to each group access permition. Ex: EMP omit_group has no access to JobTitle, Salary and Experience.   
+* Further, the user  MILAN was assigned access to the EMP group, and she will not have access to that.  
+```sql
+SECTION ACCESS;
+Authorization:
+LOAD * INLINE [
+    ACCESS, USER ID, OMIT_GROUP 
+    ADMIN, ABC\CASSIO,  
+    USER, ABC\MILAN, EMP
+    USER, ABC\KUNAL, EMP
+    USER, ABC\KUNAL, CUST
+];
+
+OmitGroups:
+LOAD * INLINE [
+    OMIT_GROUP, OMIT 
+    EMP, JobTitle  
+    EMP, Salary
+    EMP, Experience
+    CUST, Address
+    CUST, City
+];
+
+SECTION APPLICATION;  
+...
+```
+  
+**BINARY LOAD**  
+* Enables us to copy data from one app to another, with all data, section data and security;  
+
+STEPS:      
+* First create a connection with the folder that contain your shared apps. It was created during qlik enterprise installation; Usually: C: > Qlik Share > Apps.  
+* Then, get the app ID of the app you desire to copy data;    
+* Create the connection statement:  
+```sql
+BINARY LIB://Connection_folder_name (pc user name_user Id)/app_id_joio898t723bi9h8a98;  
+```    
+* Used to for example when you want to cross a new data table with an axisting app, but dont want to mess with it;  
+
+**REVIEW**
+ <p align="center">
+<img width="750" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Review%20Managing%20Security%20with%20Section%20Access.JPG">
+</p>
+
+
+
+
+
+
+
 
 
 
