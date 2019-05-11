@@ -1275,7 +1275,125 @@ RESIDENT Employees;
 
 In the table there are lots of skills listed one after each other.   
 The function to separate it is use a subfield, where the first argument is the field 'Skills', the second is the delimiter, where it will break each skill and create a new row for that employee. Use a Trim to eliminate any extra space.  
-Example: emp. 159 will have 2 rows, one with HTML and other wiht CSS.  
+Example: emp. 159 will have 2 rows, one with HTML and other wiht CSS.   
+
+**CARTESIAN PRODUCT**  
+* Raw data contains monthly physical invetory counts;  
+* Need to copy inventory counts to all days in between;  
+
+```sql
+/* --- Load all existing product Counts  and create a unique key of productID and date to overwrite it later when combining the tables*/
+TempInventory:
+LOAD
+  ProductID,
+  "Date",
+  Count,
+  ProductID & '|' & Num( "Date" ) AS Product_x_DateID
+FROM [lib://Data/Cartesian.xlsx]
+(ooxml, embedded labels, table is Sheet1);
+
+/* --- Retrieve Min and Max dates and save to variables.
+The autogenerate with fieldValueCount generate as many dates as loaded in the previous load. In this case, only 2. Then the fieldValue retrieve each value of the date field and then max and min captures the oldest and newest values. the RecNo() will act as pointer to each row data has been generated.
+After, it is stored as a variable using Peek() function to retrieve the min and max.
+*/
+TempMinMax: 
+LOAD
+  Min(FieldValue('Date', RecNo())) AS MinDate,
+  Max(FieldValue('Date', RecNo())) AS MaxDate
+AUTOGENERATE FieldValueCount('Date'); 
+
+LET vMinDate = Peek('MinDate',-1,'MinMaxDate');
+LET vMaxDate = Peek('MaxDate',-1,'MinMaxDate');
+
+DROP TABLE TempMinMax;
+
+/* --- Create all combinations of product and date 
+1- load distinct all products, in this case only 2 in a separate table TempProduct_x_Dates     
+2- Autogenerate all dates missing between the vMinDate and vMaxDate and join to products table. It will generate a cartesian product. you have 31 days x 2 products = 62 rows.
+*/
+TempProduct_x_Dates:
+LOAD DISTINCT ProductID RESIDENT TempInventory;
+
+JOIN (TempProduct_x_Dates)
+LOAD Date(RecNo()+$(vMinDate) - 1) AS Date 
+AUTOGENERATE vMaxDate - vMinDate + 1;
+
+/* --- Append missing records onto the TempInventory table
+1- Load the previous table, create the same Product_x_DateID combination ID;  
+2- On a Preceding load, compare and concatenate the keys to don't overwrite the initial values keys  (min and max dates) created previously using where not exists the loaded Product_x_DateID keys.
+ */
+CONCATENATE (TempInventory)
+LOAD * WHERE NOT EXISTS( Product_x_DateID );
+LOAD ProductID, Date,
+  ProductID & '|' & Num( Date ) AS Product_x_DateID
+RESIDENT TempProduct_x_Dates ;
+
+DROP TABLE TempProduct_x_Dates;
+
+/* --- Create final product Count table. Propagate value from above record   
+Load the TempInventory and ORDER BY PRODUCT AND DATE. Because we use the same comparison with the previous row with PEEK.  
+Load Product and date fields and create a If count:  
+if the product ID is equal to the previous ProductID and the count field is null, show the previous count, if false, rangesum with the previous value. 
+*/
+ProductCounts:
+LOAD ProductID, Date,
+  If( ProductID=Peek( ProductID ) and IsNull( Count ),
+  Peek( Count ),
+  RangeSum( Count )) AS Count
+RESIDENT TempInventory
+ORDER BY ProductID, Date; 
+
+DROP TABLE TempInventory;
+```  
+
+**MONTE CARLO SIMULATION**  
+* AUTOGENERATE = generate numbers up to a condition  
+* Rand () = Generate a randon number  
+* Ceil () = round up  
+* RecNo () = Show the number of the current row  
+
+```sql 
+DiceThrowing:
+LOAD *,
+  Dice1 + Dice2 AS SumOfDice;
+LOAD
+  RecNo( ) AS ThrowNo,
+  Ceil( Rand( ) * 6 ) AS Dice1,
+  Ceil( Rand( ) * 6 ) AS Dice2
+AUTOGENERATE 100000;
+```
+Rand generate a random number and muplied by 6 (number of chances), round up with ceil. Every pair of dice geenerated will be recorder as a unique row number.  
+
+**MONTE CARLO SIMULATION**
+The steps are:  
+1 - Create a Deck of Cards;  
+2 - Shuffle and deal the cards;  
+3 - Indetify Flush;  
+4 - Indentify Combos;  
+5 - Evaluate Combos;  
+6 - Creates outcome tables;  
+
+```sql
+/* --- Create a Deck of cards   
+ the Autogenerate create 4 rows for each iteration  of the while functions WHILE IterNo() <= 13. It means, we will have 52 combinations.  
+Pick function select one of the values in the list for each iteration.  
+In first iteration,   
+ firtst line is interno() 1 and RecNo() 1, it means '2' and 'spades'.  
+  Second row is iterno() 1 and RecNo() 2, it meand '2' and 'Hearts' and like this until Recno() is 4 being equal to autogenerate.   
+thus, you have card 2 of all 4 suits.  
+After recno() 4 it finishes firts iteration. Then start second iterno() and start recno() again. Second iterno() is card number '3', and thus create card 3 for the for recno(), or the 4 suits. finishes the all 4 iterno() for card 3, then move to other iterno() until 13. Thus you create all 52 cards.  
+After, load all filed and concatenate the cardvalue with the suits to have the card name. Deck is created
+*/
+DeckOfCards:
+LOAD *,
+	CardValue & ' of ' & Suit AS CardName;
+LOAD
+    Pick(IterNo(),'2','3','4','5','6','7','8','9','10','Jack',
+    	'Queen','King','Ace') AS CardValue,
+    Pick(RecNo(),'Spades','Hearts','Diamonds','Clubs') AS Suit
+AUTOGENERATE 4
+WHILE IterNo() <= 13;
+
 
 
 
