@@ -1143,6 +1143,147 @@ RESIDENT [Data_Table]
 <img width="750" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Classifying%20Data%20Review.JPG">
 </p>     
 
+### 4. Generating Missing Date    
+**TABLE GENERATION**  
+* RESIDENT = Copy table from memory, transform, rename, drop...     
+* AUTOGENERATE = Build from scratch, unlimited # of rows.  
+
+**RECORD GENERATION**  
+
+```sql  
+Fill in dates gaps:  
+/* Table only shows dates where conversion rates changed */ 
+Temp_Rates:
+LOAD * INLINE [
+  Date, Rate
+  10/1/2017, 1.01
+  10/4/2017, 1.08
+  10/8/2017, 1.07
+];
+
+/* Capture oldest and newest dates */
+Temp_MinMaxDate:
+LOAD 
+	Min(Date) AS MinDate, 
+    Max(Date) AS MaxDate 
+RESIDENT Temp_Rates;
+
+LET vMinDate = Peek('MinDate',-1,'MinMaxDate');
+LET vMaxDate = Peek('MaxDate',-1,'MinMaxDate');
+
+ DROP TABLE Temp_MinMaxDate;
+
+/* Generate missing dates */
+Dates:
+LOAD 
+	Date($(vMinDate) + RowNo() - 1) AS Date 
+AUTOGENERATE vMaxDate - vMinDate + 1;
+
+/* Sort by date, propagate rates down, clean up */
+Rates:
+NOCONCATENATE LOAD Date, 
+  If( IsNull( Rate ), Peek( Rate ), Rate ) AS Rate
+RESIDENT Temp_Rates
+ORDER BY Date ;
+
+DROP TABLE Temp_Rates;
+```  
+The result is a table with all dates, and also filling the rates where there is no rate with the previous rate (because the rate is te same).  
+
+**LOOP**    
+```SQL
+// Policies:
+LOAD * INLINE [
+    PolicyID, BirthDate, FromDate, ToDate, Type
+    10001, 5/21/1980, 5/1/2017, 7/1/2017, Whole Life
+    10004, 6/2/1969, 6/1/2017, 8/1/2017, Term
+    10002, 7/2/1976, 7/1/2017, 9/1/2017, Whole Life
+    10000, 10/7/1952, 10/1/2017, 12/1/2017, Term
+    10003, 12/22/1998, 12/1/2017, 2/1/2018, Term
+];
+
+// Policies_x_Dates:
+LOAD PolicyID,
+  Age(FromDate + IterNo() - 1, BirthDate) AS Age,
+  Date(FromDate + IterNo() - 1) AS ReferenceDate
+RESIDENT Policies
+WHILE IterNo() <= ToDate - FromDate + 1;
+```  
+The records only contain the beggining and end date.  
+This script creates a record for each day from the fromdate to the to date, for the age and for a new date field.  
+Now, if you select any date, it will show you the insurance active in that day.    
+
+**ACCUMULATION**  
+As example, a bank transactions list with deposits and withdraw in the same column and acc and savings.  
+* PEEK = if no argument, retrieve value of previous row  
+* RangeSum = add values and Evaluate null or  not numerical values as 0,  
+
+```sql
+/* Table shows transaction amounts per account - no balances */ 
+Temp_Transactions:
+LOAD * INLINE [
+  Account, Date, Amount
+  Checking, 10/7/2017, 100
+  Checking, 10/8/2017, 300
+  Checking, 10/9/2017, -25
+  Savings, 10/7/2017, 1000
+  Savings, 10/8/2017, 50
+  Savings, 10/9/2017, -500
+];
+
+/* Sort data then accumulate amounts */
+TransWithBalances:
+LOAD Account, Date, Amount,
+	IF(Account = Peek(Account),RangeSum(Amount, Peek(Balance)),RangeSum(Amount)) AS Balance
+RESIDENT Temp_Transactions
+ORDER BY Account, Date;
+
+DROP TABLE Temp_Transactions;
+```  
+The order by is very important to separate the type of account and organize per day, in order to have the right value.  
+The if statement says: If the account is equal to last account (peek functionality), rangesum amount with the last balance value, else just sum with amount.
+If it is the first value for one type of account, it will just sum the value itself.
+THAT IS WHY IT IS VERY IMPORTANT TO ORDER THE TYPE OF ACCOUNT.  
+
+**SUB FIELD**  
+Example, list of skills of employees with skills in the same field. ex:   
+name, skill   
+cassio, java - css
+vic, java  
+The skill dimensions is not the same. To solve:  
+* SubField =  
+
+```sql
+// Employees:
+LOAD * INLINE [
+	Emp No, Skills
+    159, HTML | CSS
+	163, JavaScript | jQuery
+    174, C# | Ruby
+    210, HTML | JavaScript
+    215, HTML | PHP | JavaScript
+    279, PHP | JavaScript
+    286, SQL | JavaScript
+    300, C# | SQL
+];
+
+Employees_x_Skills:
+LOAD [Emp No],
+	Trim(SubField(Skills, '|')) AS Skill
+RESIDENT Employees;
+```  
+
+In the table there are lots of skills listed one after each other.   
+The function to separate it is use a subfield, where the first argument is the field 'Skills', the second is the delimiter, where it will break each skill and create a new row for that employee. Use a Trim to eliminate any extra space.  
+Example: emp. 159 will have 2 rows, one with HTML and other wiht CSS.  
+
+
+
+
+
+
+
+
 
 
 
