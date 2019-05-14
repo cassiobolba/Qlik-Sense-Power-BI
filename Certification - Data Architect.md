@@ -1371,7 +1371,7 @@ The steps are:
 3 - Indetify Flush;  
 4 - Indentify Combos;  
 5 - Evaluate Combos;  
-6 - Creates outcome tables;  
+6 - Creates outcome tables;   
 
 ```sql
 /* --- Create a Deck of cards   
@@ -1392,7 +1392,181 @@ LOAD
     	'Queen','King','Ace') AS CardValue,
     Pick(RecNo(),'Spades','Hearts','Diamonds','Clubs') AS Suit
 AUTOGENERATE 4
-WHILE IterNo() <= 13;
+WHILE IterNo() <= 13; 
+
+-----------------------------------
+
+/* --- Shuffle deck and deal cards many times with the for loop until 10k hands*/
+FOR vHandNo = 1 to 10000
+  /* --- Assign a random number to each card */
+  LoadDeck:
+  LOAD *,
+    Rand() AS ShuffleSeed
+  RESIDENT DeckOfCards;
+
+  /* --- Order randomly by the random number shuffleseed and deal hands of 5 first cards in the load. drop the table to dont repeat it and concatenate. Next iteration of the variable HandNo. Also, each hand will be registered as the number of the for loop accordin to the variable vHandNo */
+  PokerHands:
+  LOAD
+    CardName,
+    CardValue,
+    Suit,
+    $(vHandNo) AS HandNo
+  RESIDENT LoadDeck
+  WHERE RecNo() <= 5
+  ORDER BY ShuffleSeed;
+
+  DROP TABLE LoadDeck;
+NEXT vHandNo
+
+DROP TABLE DeckOfCards;
+
+/* --- Check each hand for Flush  
+A flush is when all cards are the same. to indetify, a count of distinct values is used. If the count distinct is equal one, it means all cards are equal.
+ */
+IdentifyFlush:
+LOAD
+	HandNo,
+	If(Count(DISTINCT Suit)=1,1,0) AS HandHasAFlush
+RESIDENT PokerHands
+GROUP BY HandNo;
+
+/* --- Group each hand by CardValue 
+	   then count the cards to check for pair, 
+	   three of a kind, and four of a kind   */
+IdentifyCombos:
+LOAD
+    HandNo,
+    CardValue AS CardInCombo,
+    If(Count(CardName)=2,1,0) AS ComboIsPair,
+    If(Count(CardName)=3,1,0) AS ComboIsThreeOfAKind,
+    If(Count(CardName)=4,1,0) AS ComboIsFourOfAKind
+RESIDENT PokerHands
+GROUP BY HandNo, CardValue;
+  
+/* --- Evaluate identified combinations in each hand 
+	   for two pairs and a full house */
+EvaluateCombos:
+LOAD *,
+	If(HandHasAPair and HandHasThreeOfAKind, 1,0) AS HandHasAFullHouse;
+LOAD
+    HandNo,
+    If(Sum(ComboIsPair)=1,1,0) AS HandHasAPair,
+    If(Sum(ComboIsPair)=2,1,0) AS HandHasTwoPairs,
+    Sum(ComboIsThreeOfAKind) AS HandHasThreeOfAKind,
+    Sum(ComboIsFourOfAKind) AS HandHasFourOfAKind
+RESIDENT IdentifyCombos
+GROUP BY HandNo;   
+
+/* --- Build table to store a single dimension with simulation outcomes */
+Outcomes:
+LOAD 
+	'Pair' AS Outcome,
+    Sum(HandHasAPair) AS Count
+RESIDENT EvaluateCombos;
+
+LOAD 
+	'Two Pairs' AS Outcome,
+    Sum(HandHasTwoPairs) AS Count
+RESIDENT EvaluateCombos;
+
+LOAD 
+	'Three of a Kind' AS Outcome,
+    Sum(HandHasThreeOfAKind) AS Count
+RESIDENT EvaluateCombos;
+
+LOAD 
+	'Flush' AS Outcome,
+    Sum(HandHasAFlush) AS Count
+RESIDENT IdentifyFlush;
+
+LOAD 
+	'Full House' AS Outcome,
+    Sum(HandHasAFullHouse) AS Count
+RESIDENT EvaluateCombos;
+
+LOAD 
+	'Four of a Kind' AS Outcome,
+    Sum(HandHasFourOfAKind) AS Count
+RESIDENT EvaluateCombos;
+
+```    
+
+
+**SAMPLE DATA**  
+crtl + 0 + 0  
+3 TABLES WILL APPEAR: Characters, ASCII and Transactions
+
+```sql
+/*
+Generate 26 rows with 2 columns. 
+RecNo and autogenerate will create the 26 letters of alphabet with ord, that brings the char number of a string.
+ord() =  retorna o número de ponto do código Unicode do primeiro caractere da string de entrada
+*/
+Characters:
+Load Chr(RecNo()+Ord('A')-1) as Alpha, RecNo() as Num autogenerate 26;
+ 
+ASCII:
+Load 
+ if(RecNo()>=65 and RecNo()<=90,RecNo()-64) as Num,
+ Chr(RecNo()) as AsciiAlpha, 
+ RecNo() as AsciiNum
+autogenerate 255
+ Where (RecNo()>=32 and RecNo()<=126) or RecNo()>=160 ;
+
+/*
+In the first load, it creates lines with autogenarate until the while conditions meet.
+In the preceeding load, it will use tha field to create new calculations.  
+mod = modular  
+dim1 = multiply field rand 1 by 3, round up with ceil, then use pick to match the number with a character in the list.  
+The number that multiplies rand must be the same as number or character in the list
+*/ 
+Transactions:
+Load
+ TransLineID, 
+ TransID,
+ mod(TransID,26)+1 as Num,
+ Pick(Ceil(3*Rand1),'A','B','C') as Dim1,
+ Pick(Ceil(6*Rand1),'a','b','c','d','e','f') as Dim2,
+ Pick(Ceil(3*Rand()),'X','Y','Z') as Dim3,
+ Round(1000*Rand()*Rand()*Rand1) as Expression1,
+ Round(  10*Rand()*Rand()*Rand1) as Expression2,
+ Round(Rand()*Rand1,0.00001) as Expression3;
+Load 
+ Rand() as Rand1,
+ IterNo() as TransLineID,
+ RecNo() as TransID
+Autogenerate 1000
+ While Rand()<=0.5 or IterNo()=1;
+
+ Comment Field Dim1 With "This is a field comment";
+ ```  
+
+ **REPLACING NULLS**  
+ It is the - that appears in the front end or tables;  
+ it is not the same as zero or blank. Nulls cannot be selected.  
+ * you can set NullDisplay as a value and replace the dashes if data comes from ODBC;   
+ ```sql
+ SET NullDisplay = 'Null';   
+```
+
+ * isNull = for non ODBC, you can use an IF statement  
+ ```sql
+ IF(IsNull(age), 'Null', age) as Age; 
+```  
+
+* NullAsValue  
+Can also be used to set a field where nulls will be replaced:  
+ ```sql
+ NullAsValue Age;  
+ SET NullValue = 'Null';   
+ ....  
+ NullAsNull *;
+```    
+
+
+
+
+
 
 
 
