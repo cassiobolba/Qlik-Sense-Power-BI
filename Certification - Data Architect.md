@@ -1560,9 +1560,56 @@ Can also be used to set a field where nulls will be replaced:
  NullAsValue Age;  
  SET NullValue = 'Null';   
  ....  
- NullAsNull *;
-```    
+ NullAsNull *; 
+```      
 
+### 5. CrossTable and Generic Loads  
+**CROSS TABLE**   
+
+CrossTable (attribute field name, datafield name, qualifier number)    
+* Attibute field name = name of the columns that were header and will turn into a single column  
+* Data field name = name of the column for the data of the many columns header that will also turn into a single column  
+* qualifier number = number of columns that will be kept. in this case, only the artist column;  
+
+```sql
+CrossTable (Decade, #sold, 1)
+sql select *
+FROM tablename;
+```
+
+ <p align="center">
+<img width="450" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/CrossTable.PNG">
+</p>   
+
+**FOR EACH NEXT**  
+
+For each x in the list, it will get subfield by getting from '$(x)' values (the list), looking for the separator ' ' (space) and selecting the second string (tie, sweater and pants), will transform into var y.
+```SQL
+FOR EACH x IN 'red sweater', 'green tie', 'white pants'  
+LET y = SubField('$(x)', ' ', 2);   
+TRACE $(y);  
+NEXT     
+```  
+
+**GENERIC DATABASE**    
+
+Generic load is used whe you have a table with information or attributes from different type of objects, that not necessarily share the same attributes.  
+We would need to make a select disctint of every object and its attributes, then concatenate it into a single table.  
+But qlik offers the generic load.  
+
+```sql
+MyTable:  
+Generic  
+LOAD   
+    Object,  
+    "Attribute", 
+    Value  
+FROM <data source>;
+```  
+
+ <p align="center">
+<img width="400" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Generic%20Load.JPG">
+</p
 
 
 
