@@ -1609,7 +1609,44 @@ FROM <data source>;
 
  <p align="center">
 <img width="400" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Generic%20Load.JPG">
-</p
+</p>  
+
+## PART 7  
+### 1 - Introduction to Big Data   
+
+<p align="center">
+<img width="750" height="400"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Introduction%20to%20big%20data%201.JPG">
+</p>
+
+**Pitfalls and Challenges:**    
+What to look for?  
+Do you have all relevant data?  
+What is the quality of the data?  
+Does correlation equal casuality?  
+Is the sample representing reality?  
+Does more data equal more value?    
+
+**Technical Chanllenges**  
+Capacity of precessing is a big deal in big amounts of data due to memory process limitations. In order to handle it, there are few methods used. a Split - Apply - Combine Strategy to process is used. but joining them adds a complexity.  
+
+**DataBase Storage**   
+Structured data. Usually cannot handle unstructured data. Difficult to keep up with many cocurrent transactions. SQL joins create a lot of overhead and memory use.    
+to handle bigdata amount, NoSQL were created.  
+
+**Qlik Big Data Methodologies**  
+Qlik uses many technologies to handle big data, but this may not fit all purposes due to complexity, many method can be combined to fit a solution.     
+A few methods are: in-memory processing, data segmentation, Chaining, ODAG on demand app generation,  Direct Discovery.  
+
+<p align="center">
+<img width="750" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Introduction%20to%20big%20data%202.JPG">
+</p>    
+
+
+
+
+
+
+
 
 
 
