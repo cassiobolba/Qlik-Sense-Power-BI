@@ -1668,7 +1668,50 @@ A few methods are: in-memory processing, data segmentation, Chaining, ODAG on de
 
 <p align="center">
 <img width="500" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Connecting%20to%20NoSQL%20DataBase%20Review.JPG">
+</p>    
+
+### 3 - Direct Discovery   
+
+**WHAT IS IT?**  
+Direct Discovery is a hybrid method that combines IN-MEMORY DATA and DIRECT QUERIES to DB and it is part of the Big Data Strategy adopted by qlik to handle big data;  
+Can also be used to retrieve real time or nearly real time data with direct discovery; 
+
+**HOW IT WORKS**   
+Instead of loading all data to qlik server in memory service, only the dimensions are loaded fully, and the measures, expressions and other fields have only metada data loaded;  
+When user open the app or make a selection, the in-memory data is loaded to RAM and a query is sent to the data source and the retrieve the data that was only a metada and also brings to RAM;    
+The standard SQL query language used is ANSI SQL, but can also be used terada,MySql and other types os SQL;   
+
+**USE CASES**  
+* Data cannot fit in-memory methods;  
+* Data would take too long to load in memory;  
+* Only interested in aggregated results;  
+* Near-real_time analysis needed;  
+* Dimension data is limited and relative static:  
+    Ex: want to know the avg call duration of 3 regions in a call center. only 3 dimensions of regions will b loaded to in-memory. But milions of lines of call durations will be in DB, only retrieved when needed.  
+
+**SYNTAX COMPARISON**  
+<p align="center">
+<img width="600" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/Direct%20Discovery%20Syntax%20comparison.JPG">
 </p>  
+
+* Dimension: Under dimension you place all dimensions you want to be loaded in the app qvd;  
+* NATIVE: you can use the native keyword to load that field directly from datasource;  
+* Measure: Under keasure you place the field you will retrieve from data source. fields on measure can only be seen in aggregated functions in charts (sum, count, min...), only the metada will be loaded to datamodel;      
+* Detail:  Only metadata will be loaded. this data will appear only when user make a selection;  
+* You can change the limit of rows in a table at a time by seting it:  
+
+```sql  
+SET DirectTableBoxListThreshold = 100000;  
+```  
+  
+**CONSIDERATIONS**  
+* The less is the values in the threshold, faster is the load;  
+* ` back quote is not allowed;  
+* Section access is suported;  
+* Joins can be used if the cardinality of the key is low;  
+* In memory is usually faster,   
+* Can recalculate records without reloading;  
+
 
 
 
