@@ -1710,7 +1710,222 @@ SET DirectTableBoxListThreshold = 100000;
 * Section access is suported;  
 * Joins can be used if the cardinality of the key is low;  
 * In memory is usually faster,   
-* Can recalculate records without reloading;  
+* Can recalculate records without reloading;    
+
+### 4 - ODAG - on demand app genaration    
+**WHAT?**  
+* App with only aggregate data triggers creation of another app with detail data;  
+* Selection in the aggregate data filter deatail data in generated app;  
+* Used when all data don't fit in memory, or it would too slow to near real time data;    
+* Can ensure optimized user experience;  
+* Can combine to meet different use cases;  
+* Vary in deployment complexity;    
+
+**HOW?**  
+* Two apps are created: one with the template you want to generate with filtered data, and the overview app with aggr data where you will make a selection to decrease number of data and geenrate the ODAG app;  
+* You can set a goal to be able to genetate an ODAG app. ex: selection made on overview app must not have more than 50 products;  
+* After making the selction on overview app, you enable the ODAG button and can the generate a new ODAG app based on the template app;    
+* This works basically by dynamic filtering the source data with where clauses coming from selection; 
+
+**STEPS**  
+1. Configure QMC with ODAG service;  
+2. Develop traditional load script and UI = TEMPLATE APP;   
+3. Add dynamic scrip to capture filters from selction app;  
+4. Develop Traditional load script and UI for the Selection app;  
+5. Add and configure the on-demand app navigation link;  
+
+**EXAMPLE**  
+1. QMC > Enable on Demand > set number of apps, purge time...
+2. Create a new app > sales detaisl > create data model normally;  
+3. Example: you have InterSales table, and this one will be the selection app, when you add the other tables, you can filter with where clause according to the keyfiled of the table that will make the selection. Thus, when you make a selection in the internetSales table, on the other tables (ODAG) it will show only the fields assossieted with the selection.    
+4. Create the selection app as usual;  
+5. on the templae app, create the dynamic data where will be the ODAG script;    
+6. Paste the generic script in the app section;  
+
+```sql   
+// DO NOT ALTER THIS SUBROUTINE  
+/*
+this is extend QVD where sub routine which receive the values list from ODAG from app navigation object and contain the selections made on the selection app. 
+doesn't need modification
+*/
+SUB ExtendQVDWhere(Name, ValVarName)
+  LET T = Name & '_COLNAME';
+  LET ColName = $(T);
+  LET Values = $(ValVarName);
+  IF Len(Values) > 0 THEN
+        IF Len(WHERE_PART) > 0 THEN
+        LET WHERE_PART = '$(WHERE_PART) AND Mixmatch([$(ColName)],$(Values) )';
+    ELSE
+        LET WHERE_PART = ' WHERE Mixmatch([$(ColName)],$(Values))';
+    ENDIF
+  ENDIF
+END SUB;
+
+//---------------------------------------------------
+/*
+Same as before, but for sql subroutine. Because IN cannot be used in QVD.
+*/
+// // DO NOT ALTER THIS SUBROUTINE
+// SUB ExtendSQLWhere(Name, ValVarName)
+//   LET T = Name & '_COLNAME';
+//   LET ColName = $(T);
+//   LET Values = $(ValVarName);
+//   IF Len(Values) > 0 THEN
+//   	IF Len(WHERE_PART) > 0 THEN
+//     	LET WHERE_PART = '$(WHERE_PART) AND $(ColName) IN ( $(Values) )';
+//     ELSE
+//     	LET WHERE_PART = ' WHERE $(ColName) IN ( $(Values) )';
+//     ENDIF
+//   ENDIF
+// END SUB;
+
+//---------------------------------------------------
+/*
+This create the set of values that will be inserted in the dynamic where clauses. This will concatene necessáry field and place it into a inline table that will be loaded, for passing the dynamic values. 
+DONT NEED MODIFICATION
+*/
+// DO NOT ALTER THIS SUBROUTINE
+SUB BuildValueList(VarName, TableName, ColName, QuoteChrNum)
+  IF ($(QuoteChrNum) = 0) THEN
+    LET LOADEXPR = 'Concat($(ColName),' & Chr(39) & ',' & Chr(39) & ') AS CombinedData';
+  ELSE
+    LET CHREXPR = ' Chr(' & '$(QuoteChrNum)' & ') ';
+    LET LOADEXPR = 'Concat( $(CHREXPR) & $(ColName) & $(CHREXPR)' & ',' & Chr(39) & ',' & Chr(39) & ') AS CombinedData';
+  ENDIF
+  _TempTable:
+  LOAD $(LOADEXPR) Resident $(TableName);
+  LET vNoOfRows = NoOfRows('_TempTable');
+  IF $(vNoOfRows)> 0 THEN
+    LET $(VarName) = Peek('CombinedData',0,'_TempTable');
+  ENDIF
+  DROP TABLE _TempTable;
+  DROP TABLE '$(TableName)';
+END SUB;
+
+/*
+// CHANGE #1: Update these blocks of INLINE table loads to correspond to the names of the fields from your
+//           selections app.  The contents inside the $() in the record body of the INLINE load statements
+//           must match the names of the fields from your selections app that the user makes selections on.
+//           If the database column name (or QVD field name) for any of the selection fields has a different
+//           name, you need to alter the right hand side of the SET xxxx_COLNAME statement to reflect that
+//		     field's corresponding database column (or QVD field) name;
+//   
+//            All fields for On Demand are prefixed with od and the following to indicate selected or associated
+//            values
+//              ods = Selected values
+//              odo  = Associated values
+//              odso = Selected/associated values
+//
+//
+*/
+
+
+//---------------------------------------------------
+/*
+HERE THERE MODIFICATIONS  
+<YourField> = keyfield used in the where clause in from the fact table, the one used in the select app  
+<AnotherField> = change for the second value used in the where clause in a table
+*/
+SET <YourField> ='';
+OdagBinding:
+LOAD * INLINE [
+VAL
+$(odo_<YourField>){"quote": "", "delimiter": ""}
+];
+SET <YourField>_COLNAME='<YourField>';
+CALL BuildValueList('<YourField>', 'OdagBinding', 'VAL', 39);		// 39 is for single quote wrapping values
+
+// Assuming there are two fields for selections, the section above is repeated below for the second field 
+
+SET <AnotherField> ='';
+OdagBinding:
+LOAD * INLINE [
+VAL
+$(odo_<AnotherField>){"quote": "", "delimiter": ""}
+];
+SET <AnotherField>_COLNAME='<AnotherField>';
+CALL BuildValueList('<AnotherField>', 'OdagBinding', 'VAL', 39);		// 39 is for single quote wrapping values ='';  
+
+//---------------------------------------------------
+
+/*// CHANGE #2:  Alter this with a leading 'WHERE <condition>' if you want your SQL statement (below)
+//             to have a non-changing WHERE clause in addition to the clauses that will be inserted
+//             by the selection app (it is fine to leave it as is).
+*/  
+
+SET WHERE_PART = '';
+
+//---------------------------------------------------
+/*
+// CHANGE #3: Update the list of field names here to reflect each of the field names variables you have on the
+//           left hand side (assignment target) of the first SET statement of the SET statement pairs in change
+//           1 above. Note that in this case we're using ExtendQVDWhere which uses Qlik's Mixmatch to build a 
+//           WHERE clause to test whether the inbound records match the conditions.  If your LOAD statement
+//           in which WHERE_PART is applied is querying a SQL database, use the 'ExtendSQLWhere' subroutine
+//           instead (and, of course, don't forget to include your database CONNECT statement).
+
+// Assumes there are two fields for selections
+*/  
+  
+/*
+HERE THERE MODIFICATIONS   
+Fill same for '<YourField>', '<AnotherField>'  
+<NameOfFolderDataConnection> = folder created and admin  
+<NameQVDFile> = qvd needed for this 
+*/
+
+FOR EACH fldname IN '<YourField>', '<AnotherField>'
+  LET vallist = $(fldname);
+  WHEN (IsNull(vallist)) LET vallist = '';
+  IF Len(vallist) > 0 THEN
+    CALL ExtendQVDWhere('$(fldname)','vallist');
+  ENDIF
+NEXT fldname
+
+TRACE Generated WHERE clause: ;
+TRACE $(WHERE_PART);
+
+LET FOLDER='lib://<NameOfFolderDataConnection>';
+LET FACT_QVD='[$(FOLDER)/<NameQVDFile>.qvd] (qvd)';
+  
+
+//---------------------------------------------------
+  /*
+
+// CHANGE #4: Modify the list of columns (or QVD fields) you wish to load from your database table (or QVD)
+//             but leave the the $(WHERE_PART) portion of SQL (or LOAD) statement alone at the end.
+//             
+//             Note that you can have more than one of these dynamiclly alterered SELECT (or LOAD) statements
+//             by replicating the sections from CHANGE #2 thru this change #4 and customize which WHERE clauses
+//             will be inserted by altering the list of fields in the FOR EACH statement in Change #3.
+  
+
+Go to your template app and change the from statement in the fact table (the one you choose to have the key field used in other where filter) to: 
+*/ 
+
+FROM $(FACT_QVD)  
+$(WHERE_PART);
+
+```    
+
+7. Create the selection app with only the aggregated fields. comment out all fields not important to have the necessary fields to reduce memory used and increse perfrmance;  
+8. In the fact table, create the aggregated sums, count,  year, month, day.... and the fields used in the where exist clauses, use to group by the aggregations and the other date fields created.;    
+9. Create the UI of the selection app;  
+10. Go to "App Navigation Link" > Create a new > NAme > select template app > Place the expression to be calculated the threshild values > set the threshold max values ex: max o 50 distinct products > set max number of ODAG apps > set retention time > default view select > select where the generated apps will be stored or not;  
+11. Drga the link navigation to the bottom of the select app;  
+  
+**REVIEW**
+<p align="center">
+<img width="480" height="450"  src="https://github.com/cassiobolba/Qlik-Sense/blob/master/Images/ODAG%20Review.JPG">
+</p> 
+
+
+
+
+
+
+
+
 
 
 
