@@ -45,5 +45,9 @@ Pode ser que o load final esteja chamando uma tabela que não existe!
 
 PAREI EM 45 MIN - 04/06/2019
 
+**DATAS**  
+Sempre converter quando extrair datas de conexões ou salvar em qvd com num(). Quando extrair é importante para padronizar, e quando salvar é importante para otimizar a carga.
+* DATE# : quando o parâmetro recebeido é texto. O outro quando é num.
+
 
 
