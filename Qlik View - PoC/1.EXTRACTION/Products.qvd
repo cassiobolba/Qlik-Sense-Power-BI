@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+ <QvdTableHeader>
+   <QvBuildNo>50600</QvBuildNo>
+   <CreatorDoc>C:\Users\cassi\Desktop\PrimaConsulting\1.EXTRACTION\Extraction.qvw</CreatorDoc>
+   <CreateUtcTime>2020-02-27 15:41:08</CreateUtcTime>
+   <SourceCreateUtcTime></SourceCreateUtcTime>
+   <SourceFileUtcTime></SourceFileUtcTime>
+   <SourceFileSize>-1</SourceFileSize>
+   <StaleUtcTime></StaleUtcTime>
+   <TableName>Products</TableName>
+   <Fields>
+     <QvdFieldHeader>
+       <FieldName>Identifica√ß√µes do Fornecedor</FieldName>
+       <BitOffset>8</BitOffset>
+       <BitWidth>4</BitWidth>
+       <Bias>0</Bias>
+       <NumberFormat>
+         <Type>UNKNOWN</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec></Dec>
+         <Thou></Thou>
+       </NumberFormat>
+       <NoOfSymbols>12</NoOfSymbols>
+       <Offset>0</Offset>
+       <Length>81</Length>
+       <Comment></Comment>
+       <Tags></Tags>
+     </QvdFieldHeader>
+     <QvdFieldHeader>
+       <FieldName>Identifica√ß√£o</FieldName>
+       <BitOffset>0</BitOffset>
+       <BitWidth>8</BitWidth>
+       <Bias>0</Bias>
+       <NumberFormat>
+         <Type>INTEGER</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec>,</Dec>
+         <Thou>.</Thou>
+       </NumberFormat>
+       <NoOfSymbols>45</NoOfSymbols>
+       <Offset>81</Offset>
+       <Length>225</Length>
+       <Comment></Comment>
+       <Tags>
+         <String>$numeric</String>
+         <String>$integer</String>
+       </Tags>
+     </QvdFieldHeader>
+     <QvdFieldHeader>
+       <FieldName>C√≥digo do Produto</FieldName>
+       <BitOffset>16</BitOffset>
+       <BitWidth>6</BitWidth>
+       <Bias>0</Bias>
+       <NumberFormat>
+         <Type>UNKNOWN</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec></Dec>
+         <Thou></Thou>
+       </NumberFormat>
+       <NoOfSymbols>43</NoOfSymbols>
+       <Offset>306</Offset>
+       <Length>426</Length>
+       <Comment></Comment>
+       <Tags>
+         <String>$text</String>
+         <String>$ascii</String>
+       </Tags>
+     </QvdFieldHeader>
+     <QvdFieldHeader>
+       <FieldName>Nome do Produto</FieldName>
+       <BitOffset>22</BitOffset>
+       <BitWidth>6</BitWidth>
+       <Bias>0</Bias>
+       <NumberFormat>
+         <Type>UNKNOWN</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec></Dec>
+         <Thou></Thou>
+       </NumberFormat>
+       <NoOfSymbols>45</NoOfSymbols>
+       <Offset>732</Offset>
+       <Length>1505</Length>
+       <Comment></Comment>
+       <Tags>
+         <String>$text</String>
+       </Tags>
+     </QvdFieldHeader>
+     <QvdFieldHeader>
+       <FieldName>Descri√ß√£o</FieldName>
+       <BitOffset>55</BitOffset>
+       <BitWidth>1</BitWidth>
+       <Bias>-2</Bias>
+       <NumberFormat>
+         <Type>UNKNOWN</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec></Dec>
+         <Thou></Thou>
+       </NumberFormat>
+       <NoOfSymbols>0</NoOfSymbols>
+       <Offset>2237</Offset>
+       <Length>0</Length>
+       <Comment></Comment>
+       <Tags></Tags>
+     </QvdFieldHeader>
+     <QvdFieldHeader>
+       <FieldName>Custo Padr√£o</FieldName>
+       <BitOffset>40</BitOffset>
+       <BitWidth>5</BitWidth>
+       <Bias>0</Bias>
+       <NumberFormat>
+         <Type>MONEY</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec>,</Dec>
+         <Thou>.</Thou>
+       </NumberFormat>
+       <NoOfSymbols>29</NoOfSymbols>
+       <Offset>2237</Offset>
+       <Length>241</Length>
+       <Comment></Comment>
+       <Tags>
+         <String>$numeric</String>
+       </Tags>
+     </QvdFieldHeader>
+     <QvdFieldHeader>
+       <FieldName>Pre√ßo de Lista</FieldName>
+       <BitOffset>28</BitOffset>
+       <BitWidth>6</BitWidth>
+       <Bias>0</Bias>
+       <NumberFormat>
+         <Type>MONEY</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec>,</Dec>
+         <Thou>.</Thou>
+       </NumberFormat>
+       <NoOfSymbols>37</NoOfSymbols>
+       <Offset>2478</Offset>
+       <Length>261</Length>
+       <Comment></Comment>
+       <Tags>
+         <String>$numeric</String>
+       </Tags>
+     </QvdFieldHeader>
+     <QvdFieldHeader>
+       <FieldName>N√≠vel do Novo Pedido</FieldName>
+       <BitOffset>49</BitOffset>
+       <BitWidth>3</BitWidth>
+       <Bias>0</Bias>
+       <NumberFormat>
+         <Type>INTEGER</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec>,</Dec>
+         <Thou>.</Thou>
+       </NumberFormat>
+       <NoOfSymbols>8</NoOfSymbols>
+       <Offset>2739</Offset>
+       <Length>40</Length>
+       <Comment></Comment>
+       <Tags>
+         <String>$numeric</String>
+         <String>$integer</String>
+       </Tags>
+     </QvdFieldHeader>
+     <QvdFieldHeader>
+       <FieldName>N√≠vel-alvo</FieldName>
+       <BitOffset>12</BitOffset>
+       <BitWidth>4</BitWidth>
+       <Bias>0</Bias>
+       <NumberFormat>
+         <Type>INTEGER</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec>,</Dec>
+         <Thou>.</Thou>
+       </NumberFormat>
+       <NoOfSymbols>10</NoOfSymbols>
+       <Offset>2779</Offset>
+       <Length>50</Length>
+       <Comment></Comment>
+       <Tags>
+         <String>$numeric</String>
+         <String>$integer</String>
+       </Tags>
+     </QvdFieldHeader>
+     <QvdFieldHeader>
+       <FieldName>Quantidade por Unidade</FieldName>
+       <BitOffset>34</BitOffset>
+       <BitWidth>6</BitWidth>
+       <Bias>-2</Bias>
+       <NumberFormat>
+         <Type>UNKNOWN</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec></Dec>
+         <Thou></Thou>
+       </NumberFormat>
+       <NoOfSymbols>32</NoOfSymbols>
+       <Offset>2829</Offset>
+       <Length>596</Length>
+       <Comment></Comment>
+       <Tags>
+         <String>$text</String>
+       </Tags>
+     </QvdFieldHeader>
+     <QvdFieldHeader>
+       <FieldName>Descontinuado</FieldName>
+       <BitOffset>0</BitOffset>
+       <BitWidth>0</BitWidth>
+       <Bias>0</Bias>
+       <NumberFormat>
+         <Type>INTEGER</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec>,</Dec>
+         <Thou>.</Thou>
+       </NumberFormat>
+       <NoOfSymbols>1</NoOfSymbols>
+       <Offset>3425</Offset>
+       <Length>5</Length>
+       <Comment></Comment>
+       <Tags>
+         <String>$numeric</String>
+         <String>$integer</String>
+       </Tags>
+     </QvdFieldHeader>
+     <QvdFieldHeader>
+       <FieldName>Quantidade M√≠nimo do Novo Pedido</FieldName>
+       <BitOffset>52</BitOffset>
+       <BitWidth>3</BitWidth>
+       <Bias>-2</Bias>
+       <NumberFormat>
+         <Type>INTEGER</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec>,</Dec>
+         <Thou>.</Thou>
+       </NumberFormat>
+       <NoOfSymbols>6</NoOfSymbols>
+       <Offset>3430</Offset>
+       <Length>30</Length>
+       <Comment></Comment>
+       <Tags>
+         <String>$numeric</String>
+         <String>$integer</String>
+       </Tags>
+     </QvdFieldHeader>
+     <QvdFieldHeader>
+       <FieldName>Categoria</FieldName>
+       <BitOffset>45</BitOffset>
+       <BitWidth>4</BitWidth>
+       <Bias>0</Bias>
+       <NumberFormat>
+         <Type>UNKNOWN</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec></Dec>
+         <Thou></Thou>
+       </NumberFormat>
+       <NoOfSymbols>16</NoOfSymbols>
+       <Offset>3460</Offset>
+       <Length>212</Length>
+       <Comment></Comment>
+       <Tags>
+         <String>$text</String>
+       </Tags>
+     </QvdFieldHeader>
+     <QvdFieldHeader>
+       <FieldName>Anexos</FieldName>
+       <BitOffset>0</BitOffset>
+       <BitWidth>0</BitWidth>
+       <Bias>0</Bias>
+       <NumberFormat>
+         <Type>UNKNOWN</Type>
+         <nDec>0</nDec>
+         <UseThou>0</UseThou>
+         <Fmt></Fmt>
+         <Dec></Dec>
+         <Thou></Thou>
+       </NumberFormat>
+       <NoOfSymbols>1</NoOfSymbols>
+       <Offset>3672</Offset>
+       <Length>2</Length>
+       <Comment></Comment>
+       <Tags>
+         <String>$text</String>
+         <String>$ascii</String>
+       </Tags>
+     </QvdFieldHeader>
+   </Fields>
+   <Compression></Compression>
+   <RecordByteSize>7</RecordByteSize>
+   <NoOfRecords>45</NoOfRecords>
+   <Offset>3674</Offset>
+   <Length>315</Length>
+   <Lineage></Lineage>
+   <Comment></Comment>
+ </QvdTableHeader>
+    4 
+   10 2;6    2    8    6    1    7 3;4    5    3 	   9                                     "   (   )   +   0   3   4   8   9   A   B   H   J   M   P   Q   R   S   U   V   W   X   Y   Z   [   \   ]   ^   _   `   a   b   c   NWTB-1 NWTCO-3 NWTCO-4 NWTO-5 NWTJP-6 NWTDFN-7 NWTS-8 NWTDFN-14 NWTCFV-17 NWTBGM-19 NWTBGM-21 NWTB-34 NWTCM-40 NWTSO-41 NWTB-43 NWTCA-48 NWTDFN-51 NWTG-52 NWTP-56 NWTP-57 NWTS-65 NWTS-66 NWTD-72 NWTDFN-74 NWTCO-77 NWTDFN-80 NWTB-81 NWTC-82 NWTCS-83 NWTBGM-85 NWTBGM-86 NWTB-87 NWTCFV-88 NWTCFV-89 NWTCFV-90 NWTCFV-91 NWTCFV-92 NWTCFV-93 NWTCFV-94 NWTCM-95 NWTCM-96 NWTSO-98 NWTSO-99 Northwind Traders - Chai Northwind Traders - Xarope Northwind Traders - Tempero Northwind Traders - Azeite de Oliva Northwind Traders - Gel√©ia de Amora Northwind Traders - P√™ras Secas Northwind Traders - Molho de Caril Northwind Traders - Nozes Northwind Traders - Coquetel de Fruta Northwind Traders - Mist. para Bisc. de Chocolate Northwind Traders - Gel√©ia de Laranja Northwind Traders - Bolos Northwind Traders - Cerveja Northwind Traders - Carne de Caranguejo Northwind Traders - Sopa de Marisco Northwind Traders - Caf√© Northwind Traders - Chocolate Northwind Traders - Ma√ß√£s Secas Northwind Traders - Arroz Northwind Traders - Nhoque Northwind Traders - Ravioli Northwind Traders - Molho de Pimenta Northwind Traders - Molho de Tomate Northwind Traders - Mussarela Northwind Traders - Am√™ndoas Northwind Traders - Mostarda Northwind Traders - Ameixas Secas Northwind Traders - Ch√° Verde Northwind Traders - Granola Northwind Traders - Batatas Fritas Northwind Traders - Mistura para Brownie Northwind Traders - Mistura para Bolo Northwind Traders - Ch√° Northwind Traders - P√™ras Northwind Traders - P√™ssegos Northwind Traders - Abacaxi Northwind Traders - Recheio para Torta de Cereja Northwind Traders - Feij√£o Verde Northwind Traders - Milho Northwind Traders - Ervilhas Northwind Traders - Atum Northwind Traders - Salm√£o Defumado Northwind Traders - Cereal Quente Northwind Traders - Sopa de Legumes Northwind Traders - Sopa de Galinha       +@      @     Ä0@333330@     ¿2@     Ä6@        p1@     @=@öôôôôô@     `N@      %@öôôôôô+@33333Û@     @A@      #@     ‡C@      @     Ä<@     @-@33333ì/@     Ä)@öôôôô:@     Ä#@            ‡?	         
+      öôôôôY5@      (        @7@'   ffffff"@Q      ffffff2@ÕÃÃÃÃL#@.        Ä)@5      &        Ä3@ÕÃÃÃÃ5@   ffffffA@         @ÏQ∏ÖÎ@   ÕÃÃÃÃÃ¸?{ÆG·˙(@{ÆG·˙/@ÕÃÃÃÃÃÙ?      ¯?   333333Û?   =
+◊£p=˛?333333ˇ?
+                  2   d   (   d      <   x   P   K   }   »   2   10 caixas x 20 sacos Garrafas de 12 - 550 ml Frascos de 48 - 6 oz 36 caixas Frascos de 12 - 8 oz Pacotes de 12 - 1 lb Frascos de 12 - 12 oz Pacotes de 40 - 100 g 15.25 OZ 10 caixas x 12 pe√ßas 30 caixas de presente 24 pacotes x 4 pe√ßas Garrafas de 24 - 12 oz Latas de 24 - 4 oz Latas de 12 - 12 oz Latas de 16 - 500 g 10 pacotes Pacotes 50 - 300 g Caixas de 16 - 2 kg Pacotes de 24 - 250 g Garrafas 32 - 8 oz Frascos de 24 - 8 oz Pacotes de 24 - 200 g Pacote de 5 kg 12 caixas Saco de 1 lb 20 sacos por caixa 3 caixas 4 caixas 100 unidades por caixa 14,5 OZ 5 oz     
+                  Bebidas Condimentos √ìleo Gel√©ias, Compotas Nozes e Frutas Secas Molhos Frutas e Legumes Enlatados P√£es e Bolos Carne Enlatada Sopas Doce Gr√£os Massa Latic√≠nios Cereal Batatas Fritas, Lanches        A!2Ç " √0C Ad2EQÖ Üa ¶ «q$á Ç(» 	&Ií,ÈD
+Ñ¢0j & 4·D0≥8VGL√<iç”@-!Œ„D2ÙHO3PMê ëQq3F“$UíiV5Uì{TEY¥ TïU]µz	÷ea∂!"dÅD1Xvi7VcôÜmò<z⁄ñq>ßŸã\∑˙	&ù«u˚@&ﬁ◊yÎ@ ó®}
+!`Ë)‹ "°¯)‹ #‚∏)‹ $#	*‹ %dÇ‹ &•Ç‹ 'Ê˘Å‹ (ó'
+Ü	)óh™Ö	*Üõ*ÿ+ÖÈ:<,Ö*K<
