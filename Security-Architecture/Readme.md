@@ -1,3 +1,5 @@
+# Security - Architecture studies
+
 # Experience in Qlik Sense security concepts (section access and security rules) 
 **To provide secure information management, these key risks need to be mitigated:**  
 * Unrealiable reporting;
