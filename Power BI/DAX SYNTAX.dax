@@ -1,0 +1,229 @@
+// FORMATAR DATA
+MonthLong_Year = FORMAT ( [Date]; "mmmm yyyy" ) 
+
+// MES ATUAL DE ACORDO COM A SELEÇÃO
+Month Current = IF(
+                    ISBLANK([MonthSelected]);
+                     FORMAT ( TODAY(); "MM" );
+                      SELECTEDVALUE(DimDateCalendarMonth[Monthnumber])
+                     )
+
+// ANO ATUAL DE ACORDO COM A SELEÇÃO
+Year Current = 
+            IF(
+                ISBLANK([YearSelected]); 
+                [YearNow];
+                CONCATENATE(""; [YearSelected])
+            )
+
+// DATA SELECIONADA DE ACORDO COM A SELEÇÃO
+DateSelected = 
+ Date (
+        [Year Current];
+        [Month Current];
+        "1"
+)
+
+// CAMPO CALCULANDO O MÊS-3
+Month Current-3 = 
+    If(
+        INT([Month Current]) = 1;
+              int([Month Current]) -3;
+              int([Month Current]) -3
+        )
+
+// CAMPO CALCULANDO O MÊS-3
+DateSelected_M-3 = 
+ VAR _YEAR = IF(INT([Month Current-3]) > INT([Month Current]);  [Year Current] - 1; [Year Current])
+ Return 
+ Date (
+        _YEAR;
+        [Month Current-3];
+        "1"
+ )
+              
+// 
+cassio1 = 
+CALCULATE(
+          [Real em HL];
+            DATESBETWEEN(DimDateCalendarMonth[Date];  
+                          [DateSelected_M-3];  
+                          [DateSelected] 
+                        )
+          )
+
+// CAMPO CALCULANDO O MÊS+3
+Month Current+3 = 
+            If(
+                INT([Month Current]) = 1;
+                4;
+                int([Month Current]) +3
+              )
+
+// CAMPO CALCULANDO DATA + 3
+DateSelected_M+3 = 
+ VAR _YEAR = IF(INT([Month Current+3]) < INT([Month Current]);  [Year Current] + 1; [Year Current])
+ Return 
+ Date (
+        _YEAR;
+        [Month Current+3];
+        "1"
+      )
+
+// MÊS ATUAL + 3
+cassio2 = 
+CALCULATE( [Real em HL];
+            DATESBETWEEN(DimDateCalendarMonth[Date];  
+                          [DateSelected];  
+                          [DateSelected_M+3] 
+                        )
+          )
+
+// MÊS -3 ATÉ MÊ + 3
+cassio3 = 
+CALCULATE( ([Real em HL] / 1,5 );
+               DATESBETWEEN(DimDateCalendarMonth[Date];  
+                              [DateSelected_M-3];  
+                              [DateSelected_M+3] 
+                            )
+          )
+
+
+06/02/2020
+// SETA PARA CIMA E SETA PARA BAIXO
+arrow = if ( 
+            [MÊS PASSADO] >=0 ; 
+              UNICHAR(9650) ;
+              UNICHAR(9660)
+            ) 
+
+
+
+VAR SelectedDateTeste = CALCULATE( MAX('Date(2)'[Date] ); ALL(Date))
+Return
+if ( and (Max(dates)> SelectedDateTeste - 3; max(dates) <= SelectedDateTeste ); Sales ; BLANK())
+
+// REAL HL QUE QUANDO NÃO TEM SELEÇÃO, PEGA DADOS DO MÊS ATUAL
+Real em hl filter date = 
+CALCULATE (
+[Real em HL];
+DATESBETWEEN ( DimDateCalendarMonth[MonthDate];
+[DateSelected];
+[LastDayOfTheMonth]
+)) 
+
+// ÚLTIMO DIA DO MÊS SELECIONADO, SE NÃO TEM SELEÇÃO, ULTIMA DO DIA DO MES ATUAL
+LastDayOfTheMonth = EOMONTH([DateSelected];0) 
+
+// CRIANDO UMA TABELA SUMARIZADA DE UMA EXISTENTE - criar nova tabela e usar expressão abaixo
+// REFERÊNCIA https://www.youtube.com/watch?v=juWXRSQm1W4
+BucketMensalSumarizada = SUMMARIZE(
+                            'Bucket Mensal'; //tabela que estou sumarizando
+                            'Bucket Mensal'[MonthDate];// campo para group by
+                            'Bucket Mensal'[Tipo_Produto];// campo para group by
+                            'Bucket Mensal'[COD_DPG]; // campo para group by
+                            "Sum Real/Periodo"; // Nome do campo com valor sumarizado
+                            SUM('Bucket Mensal'[REAL]) // expressão do campo valor sumarizado
+                                )
+
+// TROCAR ANO PARA FAZER PERIODO PARALELO NO ANO SEGUINTE
+DataChaveY+1 = DATE(
+                  YEAR(BucketMensalSumarizada[MonthDate]) + 1;
+                  MONTH(BucketMensalSumarizada[MonthDate]);
+                  "01"
+                  )
+
+// CHAVE CONCATENADA
+MonthDate|Produto|Geo = COMBINEVALUES("|";
+                              BucketMensalSumarizada[DataChaveY+1];
+                              BucketMensalSumarizada[Tipo_Produto];
+                              BucketMensalSumarizada[COD_DPG])                  
+
+// CHAVE CONCATENADA NA BUCKET MENSAL
+MonthDate|Produto|Geo = COMBINEVALUES("|";
+                                        'Bucket Mensal'[MonthDate];
+                                        'Bucket Mensal'[Tipo_Produto];
+                                        'Bucket Mensal'[COD_DPG])
+
+
+
+// VALOR PRO MESMO MÊS NO ANO ANTERIOR -  NÃO FUNCIONOU DEVIDO A CHAVE SER APENAS MÊS
+Sum Real/Período Y-1 = CALCULATE( 
+                                SUM(BucketMensalSumarizada[Sum Real/Periodo]);
+                                PARALLELPERIOD(BucketMensalSumarizada[MonthDate];
+                                -12;
+                                MONTH )
+                                )
+
+
+cassio10 = 
+IF(ISFILTERED ( marca );SELECTEDVALUE ( cassio3); BLANK())
+
+
+// usar nos filtros = 1
+embalagemselecionada = CALCULATE(IF(ISFILTERED('Bucket Mensal'[EMBALAGEM]);1;0);ALLSELECTED('Bucket Mensal'))
+// usar nos filtros = 1
+marcaselecionada = CALCULATE(IF(ISFILTERED(Produtos[MARCA]);1;0);ALLSELECTED(Produtos))
+marcaselecionada = CALCULATE(IF(ISFILTERED('Icones Marcas'[img_base64]);1;0);ALLSELECTED('Icones Marcas'))
+
+// REAL EM KHL
+Real em KHL = 
+VAR calculo =
+    CALCULATE (
+        [Real em HL];
+        DATESBETWEEN ( DimDateCalendarMonth[MonthDate];
+        [DateSelected];
+        [LastDayOfTheMonth]
+)) 
+RETURN
+    DIVIDE(calculo;  100000)
+
+// PROCENTAGEM COMPARANDO MÊS ATUAL SELECIONADO AO MÊS ANTERIOR AO SELECIONADO
+MÊS PASSADO = IF(ISBLANK([cassio4]); BLANK(); DIVIDE([Real em KHL] ; [cassio4]; 0) -1)  
+
+// VALOR REAL EM HL DO MÊS ANTERIOR
+cassio4 = 
+(CALCULATE( 
+            sum('Bucket Mensal'[REAL]);
+             DATESBETWEEN(DimDateCalendarMonth[Date];  
+                [DateSelected_M-1] ;  
+                [LastDayOfTheMonth_M-1] 
+            )
+        ))/100000
+
+// date selexted mes anterior
+DateSelected_M-1 = 
+ VAR _YEAR = IF(INT([Month Current-1]) > INT([Month Current]);  [Year Current] - 1; [Year Current])
+ Return 
+ Date (
+        _YEAR;
+        [Month Current-1];
+        "1"
+)
+
+// ultimo dia do mes anterior ao selecionado
+LastDayOfTheMonth_M-1 = EOMONTH([DateSelected_M-1];0)
+
+/// SETAS NOVAS
+//Remover filtros de Tipo_Prod das setas
+//Alterar Mês pasados nos data Label, pra cores
+
+LastMonth_Beer = CALCULATE([MÊS PASSADO];
+							ALL('FiltraRelação');
+							'FiltraRelação'[TIPO_PROD] = "Cerveja"
+						)
+LastMonth_HighEnd = CALCULATE([MÊS PASSADO]; 
+							ALL('FiltraRelação');
+							'FiltraRelação'[TIPO_PROD] = "High End"
+						)
+LastMonth_Nab = CALCULATE([MÊS PASSADO];
+                    ALL('FiltraRelação');
+                    'FiltraRelação'[TIPO_PROD] = "Refrinanc"
+                    )
+
+//Adiciona em cada seta 
+arrow Ceva = if ( [LastMonth_Beer] >=0 ; UNICHAR(9650); UNICHAR(9660) )
+arrow High End = if ([LastMonth_HighEnd] >=0 ; UNICHAR(9650); UNICHAR(9660))
+arrow Nab = if ( [LastMonth_Nab] >=0 ; UNICHAR(9650); UNICHAR(9660) ) 
+//Adicionar os lasts no datalabel em vez do mês passado 
+ 
